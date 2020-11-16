@@ -27,11 +27,11 @@
 - SpeechRecognitionRequest 用于配置请求参数，可通过SpeechRecognitionRequest.initialize()方法进行初始化。
 - SpeechRecognitionResponse 请求响应。
 - SpeechRecognitionListener 请求回调。包含识别开始，识别结束等回调方法。
-#### 注意事项
 
 
 
 ## SDK使用说明
+
 1.创建SpeechClient实例。
 2.创建SpeechRecognitionRequest,这里配置请求相关参数包含切片大、引擎模型类型、文件格式等，具体参考官网请求参数<https://cloud.tencent.com/document/product/1093/35799>。
 3.创建SpeechRecognizer实例，该实例是语音识别的处理者。
