@@ -19,6 +19,11 @@
     <version>1.0.5</version>
 </dependency>
 ```
+
+## 代码参考
+
+[参考案例](https://github.com/TencentCloud/tencentcloud-speech-sdk-java-example "参考案例")
+
 # ASR SDK说明
 ##  关键类说明
 
