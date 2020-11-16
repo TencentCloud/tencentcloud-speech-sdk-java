@@ -149,10 +149,11 @@ public class NewSpeechRecognitionHttpByteArrayExample {
 
 
 ## SDK使用说明
-1.创建SpeechClient实例。
-2.创建SpeechSynthesisRequest,这里配置请求相关参数，具体参考官网请求参数<https://cloud.tencent.com/document/product/1073/34093>。
-3.创建SpeechSynthesizer实例，该实例是语音识别的处理者。
-4.调用SpeechSynthesizer的synthesis方法开始发送语音数据。
+
+1. 创建SpeechClient实例。
+2. 创建SpeechSynthesisRequest,这里配置请求相关参数，具体参考官网请求参数<https://cloud.tencent.com/document/product/1073/34093>。
+3. 创建SpeechSynthesizer实例，该实例是语音识别的处理者。
+4. 调用SpeechSynthesizer的synthesis方法开始发送语音数据。
 
 # 示例
 #### 代码示例
