@@ -146,9 +146,9 @@ public class NewSpeechRecognitionHttpByteArrayExample {
 
 - SpeechClient  用于创建SpeechRecognizer语音合成器的客户端，通过SpeechClient.newInstance创建该实例，newInstance为单例实现。
 - SpeechSynthesizer 语音合成器，通过客户端speechClient.newSpeechSynthesizer创建实例。
-- SpeechSynthesizerRequest 用于配置请求参数，可通过SpeechSynthesizerRequest.initialize()方法进行初始化。
-- SpeechSynthesizerResponse 请求响应。
-- SpeechSynthesizerListener 请求回调。包含onMessage onComplete  onFail 回调方法。
+- SpeechSynthesisRequest 用于配置请求参数，SpeechSynthesisRequest.initialize()方法进行初始化。
+- SpeechSynthesisResponse 请求响应。
+- SpeechSynthesisListener 请求回调。包含onMessage onComplete  onFail 回调方法。
 #### 注意事项
 
 
