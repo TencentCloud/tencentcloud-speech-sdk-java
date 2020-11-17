@@ -27,7 +27,7 @@
 # ASR SDK说明
 ##  关键类说明
 
-- SpeechClient  用于创建SpeechRecognizer语音识别器的客户端，通过SpeechClient.newInstance创建该实例，newInstance为单例实现。
+- SpeechClient 通过SpeechClient.newInstance创建该实例，newInstance为单例实现。
 - SpeechRecognizer 语音识别器，通过客户端speechClient.newSpeechRecognizer创建实例。
 - SpeechRecognitionRequest 用于配置请求参数，可通过SpeechRecognitionRequest.initialize()方法进行初始化。
 - SpeechRecognitionResponse 请求响应。
@@ -144,7 +144,7 @@ public class NewSpeechRecognitionHttpByteArrayExample {
 # TTS SDK说明
 ##  关键类说明
 
-- SpeechClient  用于创建SpeechRecognizer语音合成器的客户端，通过SpeechClient.newInstance创建该实例，newInstance为单例实现。
+- SpeechClient 通过SpeechClient.newInstance创建该实例，newInstance为单例实现。
 - SpeechSynthesizer 语音合成器，通过客户端speechClient.newSpeechSynthesizer创建实例。
 - SpeechSynthesisRequest 用于配置请求参数，SpeechSynthesisRequest.initialize()方法进行初始化。
 - SpeechSynthesisResponse 请求响应。
