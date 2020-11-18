@@ -26,7 +26,6 @@ import com.tencent.core.service.ReportService;
 import com.tencent.core.utils.JsonUtil;
 import com.tencent.core.utils.SignBuilder;
 import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
 import okhttp3.Response;
 import okhttp3.WebSocket;
 import okhttp3.WebSocketListener;
@@ -39,7 +38,6 @@ import java.util.concurrent.locks.ReentrantLock;
 /**
  * websocket asr
  */
-@Slf4j
 public class SpeechWsRecognizer implements SpeechRecognizer {
 
     /**

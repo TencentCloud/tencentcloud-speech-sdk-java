@@ -27,7 +27,6 @@ import com.tencent.tts.model.SpeechSynthesisRequest;
 import com.tencent.tts.model.SpeechSynthesisRequestContent;
 import com.tencent.tts.model.SpeechSynthesisResponse;
 import com.tencent.tts.utils.Ttsutils;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.ClientProtocolException;
@@ -44,7 +43,6 @@ import java.util.List;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-@Slf4j
 public class SpeechSynthesizer {
 
     /**

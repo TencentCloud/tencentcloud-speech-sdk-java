@@ -30,7 +30,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.concurrent.FutureCallback;
@@ -42,7 +41,6 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-@Slf4j
 public class HttpBaseService {
 
     /**
@@ -653,7 +651,7 @@ public class HttpBaseService {
                                 break;
                             }
                         } catch (RuntimeException e) {
-                            log.error(e.getMessage());
+
                         }
                     }
                 }

@@ -25,13 +25,11 @@ import com.tencent.core.service.ReportService;
 import com.tencent.core.service.TCall;
 import com.tencent.core.utils.JsonUtil;
 import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.ExecutorService;
 
-@Slf4j
 public class HttpStreamService extends HttpBaseService implements TCall<InputStream> ,SpeechRecognizer{
 
     public HttpStreamService(String streamId, AsrConfig config, AsrRequest request, RealTimeEventListener realTimeEventListener,

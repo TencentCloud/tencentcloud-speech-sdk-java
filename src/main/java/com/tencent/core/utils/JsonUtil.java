@@ -5,11 +5,9 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import lombok.extern.slf4j.Slf4j;
 
 import java.text.SimpleDateFormat;
 
-@Slf4j
 public class JsonUtil {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
@@ -39,7 +37,7 @@ public class JsonUtil {
         try {
             json = OBJECT_MAPPER.writeValueAsString(obj);
         } catch (Exception e) {
-            log.error(e.getMessage());
+            e.printStackTrace();
         }
         return json;
     }
@@ -52,7 +50,7 @@ public class JsonUtil {
         try {
             pojo = OBJECT_MAPPER.readValue(json, type);
         } catch (Exception e) {
-            log.error(e.getMessage());
+            e.printStackTrace();
         }
         return pojo;
     }

@@ -9,12 +9,10 @@ import com.tencent.core.handler.BaseEventListener;
 import com.tencent.core.handler.RealTimeEventListener;
 import com.tencent.core.service.ReportService;
 import com.tencent.core.service.TCall;
-import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-@Slf4j
 public class SpeechHttpRecognizer extends HttpBaseService implements TCall<byte[]>, SpeechRecognizer {
     private AtomicBoolean startFlag = new AtomicBoolean(false);
 

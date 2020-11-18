@@ -16,32 +16,28 @@
 <dependency>
     <groupId>com.tencentcloudapi</groupId>
     <artifactId>tencentcloud-speech-sdk-java</artifactId>
-    <version>1.0.5</version>
+    <version>1.0.6</version>
 </dependency>
 ```
-
-## 代码参考
-
-[参考案例](https://github.com/TencentCloud/tencentcloud-speech-sdk-java-example "参考案例")
-
 # ASR SDK说明
 ##  关键类说明
 
-- SpeechClient 通过SpeechClient.newInstance创建该实例，newInstance为单例实现。
+- SpeechClient  用于创建SpeechRecognizer语音识别器的客户端，通过SpeechClient.newInstance创建该实例，newInstance为单例实现。
 - SpeechRecognizer 语音识别器，通过客户端speechClient.newSpeechRecognizer创建实例。
 - SpeechRecognitionRequest 用于配置请求参数，可通过SpeechRecognitionRequest.initialize()方法进行初始化。
 - SpeechRecognitionResponse 请求响应。
 - SpeechRecognitionListener 请求回调。包含识别开始，识别结束等回调方法。
+#### 注意事项
+
+
 
 ## SDK使用说明
-
-1. 创建SpeechClient实例。
-2. 创建SpeechRecognitionRequest,这里配置请求相关参数包含切片大、引擎模型类型、文件格式等，具体参考官网请求参数<https://cloud.tencent.com/document/product/1093/35799>。
-3. 创建SpeechRecognizer实例，该实例是语音识别的处理者。
-4. 调用SpeechRecognizer的start方法,开始识别。
-5. 调用SpeechRecognizer的write方法开始发送语音数据。
-6. 调用SpeechRecognizer的stop方法,结束识别。
-
+1.创建SpeechClient实例。
+2.创建SpeechRecognitionRequest,这里配置请求相关参数包含切片大、引擎模型类型、文件格式等，具体参考官网请求参数<https://cloud.tencent.com/document/product/1093/35799>。
+3.创建SpeechRecognizer实例，该实例是语音识别的处理者。
+4.调用SpeechRecognizer的start方法,开始识别。
+5.调用SpeechRecognizer的write方法开始发送语音数据。
+6.调用SpeechRecognizer的stop方法,结束识别。
 
 # 示例
 #### 代码示例
@@ -144,21 +140,20 @@ public class NewSpeechRecognitionHttpByteArrayExample {
 # TTS SDK说明
 ##  关键类说明
 
-- SpeechClient 通过SpeechClient.newInstance创建该实例，newInstance为单例实现。
+- SpeechClient  通过SpeechClient.newInstance创建该实例，newInstance为单例实现。
 - SpeechSynthesizer 语音合成器，通过客户端speechClient.newSpeechSynthesizer创建实例。
-- SpeechSynthesisRequest 用于配置请求参数，SpeechSynthesisRequest.initialize()方法进行初始化。
-- SpeechSynthesisResponse 请求响应。
-- SpeechSynthesisListener 请求回调。包含onMessage onComplete  onFail 回调方法。
+- SpeechSynthesizerRequest 用于配置请求参数，可通过SpeechSynthesizerRequest.initialize()方法进行初始化。
+- SpeechSynthesizerResponse 请求响应。
+- SpeechSynthesizerListener 请求回调。包含onMessage onComplete  onFail 回调方法。
 #### 注意事项
 
 
 
 ## SDK使用说明
-
-1. 创建SpeechClient实例。
-2. 创建SpeechSynthesisRequest,这里配置请求相关参数，具体参考官网请求参数<https://cloud.tencent.com/document/product/1073/34093>。
-3. 创建SpeechSynthesizer实例，该实例是语音识别的处理者。
-4. 调用SpeechSynthesizer的synthesis方法开始发送语音数据。
+1.创建SpeechClient实例。
+2.创建SpeechSynthesisRequest,这里配置请求相关参数，具体参考官网请求参数<https://cloud.tencent.com/document/product/1073/34093>。
+3.创建SpeechSynthesizer实例，该实例是语音识别的处理者。
+4.调用SpeechSynthesizer的synthesis方法开始发送语音数据。
 
 # 示例
 #### 代码示例

@@ -9,7 +9,6 @@ import com.tencent.core.utils.Tutils;
 import com.tencentcloudapi.asr.v20190614.AsrClient;
 import com.tencentcloudapi.common.Credential;
 import com.tencentcloudapi.common.exception.TencentCloudSDKException;
-import lombok.extern.slf4j.Slf4j;
 import net.jodah.expiringmap.ExpirationPolicy;
 import net.jodah.expiringmap.ExpiringMap;
 import org.apache.commons.lang3.StringUtils;
@@ -17,7 +16,6 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
-@Slf4j
 public class ReportService {
 
     /**
@@ -138,9 +136,9 @@ public class ReportService {
         id = Optional.ofNullable(id).orElse("");
         if (GlobalConfig.ifLog) {
             if (error) {
-                log.error("[" + id + "]" + message);
+                System.out.println("[" + id + "]" + message);
             } else {
-                log.info("[" + id + "]" + message);
+                System.out.println("[" + id + "]" + message);
             }
         }
     }
