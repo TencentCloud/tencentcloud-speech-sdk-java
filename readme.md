@@ -81,7 +81,7 @@ public class NewSpeechRecognitionHttpByteArrayExample {
         request.setVoiceFormat(1);
         //3.创建SpeechRecognizer实例，该实例是语音识别的处理者。
         SpeechRecognizer speechRecognizer = speechClient.newSpeechRecognizer(request, new MySpeechRecognitionListener());
-        //案例使用文件模拟实时获取语音流，用户使用可直接调用recognize(data)传入字节数据
+        //案例使用文件模拟实时获取语音流，用户使用可直接调用write(data)传入字节数据
         FileInputStream fileInputStream = new FileInputStream(new File("8k.wav"));
         List<byte[]> speechData = ByteUtils.subToSmallBytes(fileInputStream, 3200);
         //4.调用SpeechRecognizer的start方法,开始识别。
@@ -90,7 +90,7 @@ public class NewSpeechRecognitionHttpByteArrayExample {
             // 休眠用于模拟语音时长，方便测试，休眠时间根据传输数据选择对应值。实际使用不用休眠
             // 参考时长：8k 3200字节 对应200ms  16k 6400字节对应200ms
             Thread.sleep(200);
-            //5.调用SpeechRecognizer的recognize方法开始发送语音数据。
+            //5.调用SpeechRecognizer的write方法开始发送语音数据。
             speechRecognizer.write(item);
         }
         //6.调用SpeechRecognizer的end方法,结束识别。
