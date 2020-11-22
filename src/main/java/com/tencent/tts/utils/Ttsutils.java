@@ -30,12 +30,13 @@ public class Ttsutils {
      * @param sampleRate sampleRate
      * @param response   response
      * @param sessionId  sessionId
+     * @return filePath, generate file path
      */
-    public static void responsePcm2Wav(int sampleRate, byte[] response, String sessionId) {
-        printAndSaveResponse(sampleRate, response, sessionId);
+    public static String responsePcm2Wav(int sampleRate, byte[] response, String sessionId) {
+        return printAndSaveResponse(sampleRate, response, sessionId);
     }
 
-    public static void printAndSaveResponse(int sampleRate, byte[] response, String sessionId) {
+    public static String printAndSaveResponse(int sampleRate, byte[] response, String sessionId) {
         if (response != null) {
             new File("logs").mkdirs();
             //获取返回包大小
@@ -49,8 +50,11 @@ public class Ttsutils {
             saveWavFile(wav, wavFile);
             ReportService.ifLogMessage(sessionId, "Response: " + sessionId + ", length: "
                     + response.length + ", result saved at: " + wavFile.getAbsolutePath(), false);
-        } else
+            return wavFile.getAbsolutePath();
+        } else {
             ReportService.ifLogMessage(sessionId, "Result is null.", true);
+            return null;
+        }
     }
 
 
