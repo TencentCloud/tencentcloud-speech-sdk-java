@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.tencent.asr.service;
 
 import com.tencent.asr.model.AsrConfig;
@@ -30,9 +31,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.ExecutorService;
 
-public class HttpStreamService extends HttpBaseService implements TCall<InputStream> ,SpeechRecognizer{
+public class HttpStreamService extends HttpBaseService implements TCall<InputStream>, SpeechRecognizer {
 
-    public HttpStreamService(String streamId, AsrConfig config, AsrRequest request, RealTimeEventListener realTimeEventListener,
+    public HttpStreamService(String streamId, AsrConfig config, AsrRequest request,
+                             RealTimeEventListener realTimeEventListener,
                              ExecutorService executor, BaseEventListener<AsrResponse> baseEventListener) {
         super(streamId, config, request, realTimeEventListener, baseEventListener);
     }
@@ -40,7 +42,6 @@ public class HttpStreamService extends HttpBaseService implements TCall<InputStr
 
     /**
      * 请求前置方法，开启线程监听请求结果
-     *
      */
     public void start() {
         tractionManager.beginTraction(streamId);
@@ -81,7 +82,7 @@ public class HttpStreamService extends HttpBaseService implements TCall<InputStr
     }
 
     @Override
-    public void write(byte[] stream){
+    public void write(byte[] stream) {
 
     }
 
@@ -122,7 +123,9 @@ public class HttpStreamService extends HttpBaseService implements TCall<InputStr
                             staging.setVoiceId(AsrUtils.getVoiceId(asrConfig.getAppId()));
                             staging.setEnd(0);
                             staging.setSeq(0);
-                            ReportService.ifLogMessage(staging.getVoiceId(), "Retransmission settings:" + JsonUtil.toJson(staging) + ",进行seq=0重传", true);
+                            ReportService.ifLogMessage(staging.getVoiceId(),
+                                    "Retransmission settings:"
+                                            + JsonUtil.toJson(staging) + ",进行seq=0重传", true);
                         }
                     }
                     //设置过期时间，如果超过2m没有发送流，则重新设置voiceId

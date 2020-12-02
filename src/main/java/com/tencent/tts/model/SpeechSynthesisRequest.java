@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.tencent.tts.model;
 
 import com.tencent.core.model.TRequest;
@@ -28,32 +29,38 @@ import java.util.Map;
 public class SpeechSynthesisRequest extends TRequest {
 
     /**
-     * 是	Int	当前 UNIX 时间戳，可记录发起 API 请求的时间。如果与当前时间相差过大，会引起签名过期错误。SDK 会自动赋值当前时间戳。
+     * 是
+     * Int当前 UNIX 时间戳，可记录发起 API 请求的时间。如果与当前时间相差过大，会引起签名过期错误。SDK 会自动赋值当前时间戳。
      */
     private Long timestamp;
 
     /**
-     * 是	Int	签名的有效期，是一个符合 UNIX Epoch 时间戳规范的数值，单位为秒；Expired 必须大于 Timestamp 且 Expired-Timestamp 小于90天。SDK 默认设置 1 h。
+     * 是
+     * Int签名的有效期，是一个符合 UNIX Epoch 时间戳规范的数值，单位为秒；Expired 必须大于 Timestamp 且 Expired-Timestamp 小于90天。SDK 默认设置 1 h。
      */
     private Long expired;
 
 
     /**
-     * 是	String	一次请求对应一个 SessionId，会原样返回，建议传入类似于 uuid 的字符串防止重复。
+     * 是
+     * String一次请求对应一个 SessionId，会原样返回，建议传入类似于 uuid 的字符串防止重复。
      */
     private String sessionId;
     /**
-     * 否	Int	模型类型，1：默认模型，此字段只需设置为1即可。
+     * 否
+     * Int模型类型，1：默认模型，此字段只需设置为1即可。
      */
     private Integer modelType;
 
     /**
-     * 否	Float	音量大小，范围：[0，10]，分别对应11个等级的音量，默认值为0，代表正常音量。没有静音选项。
+     * 否
+     * Float音量大小，范围：[0，10]，分别对应11个等级的音量，默认值为0，代表正常音量。没有静音选项。
      */
     private Integer volume;
 
     /**
-     * 否	Int	语速，范围：[-2，2]分别对应不同语速：
+     * 否
+     * Int语速，范围：[-2，2]分别对应不同语速：
      * -2代表0.6倍
      * -1代表0.8倍
      * 0代表1.0倍（默认）
@@ -65,20 +72,24 @@ public class SpeechSynthesisRequest extends TRequest {
     private Float speed;
 
     /**
-     * 否	Int	项目 ID，可以根据控制台-账号中心-项目管理中的配置填写，如无配置请填写默认项目ID:0 。
+     * 否
+     * Int项目 ID，可以根据控制台-账号中心-项目管理中的配置填写，如无配置请填写默认项目ID:0 。
      */
     private Integer projectId;
     /**
-     * 否	Int	详见：语音合成 API 文档中的 VoiceType 参数。
+     * 否
+     * Int详见：语音合成 API 文档中的 VoiceType 参数。
      */
     private Integer voiceType;
 
     /**
-     * 否 主语言类型：1：中文（默认）2：英文
+     * 否
+     * 主语言类型：1：中文（默认）2：英文
      */
     private Integer primaryLanguage;
     /**
-     * 否  Int 音频采样率：
+     * 否
+     * Int 音频采样率：
      * 16000:16k（默认）
      * 8000:8k
      */
@@ -86,7 +97,8 @@ public class SpeechSynthesisRequest extends TRequest {
 
 
     /**
-     * 否 String 返回音频格式：
+     * 否
+     * String 返回音频格式：
      * opus：
      * 返回多段含 opus
      * 压缩分片音频，数据量小，建议使用（默认）。

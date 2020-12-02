@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.tencent.core.handler;
 
-public interface RealTimeEventListener<T,M> {
+public interface RealTimeEventListener<T, M> {
 
     M translation(T response);
 }

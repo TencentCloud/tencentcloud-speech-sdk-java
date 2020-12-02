@@ -12,13 +12,15 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */package com.tencent.asr.utils;
+ */
+
+package com.tencent.asr.utils;
 
 import cn.hutool.core.util.RandomUtil;
 
 public class AsrUtils {
 
     public static String getVoiceId(Long id) {
-        return id + "_" + System.currentTimeMillis() +"_"+ RandomUtil.randomString(5);
+        return id + "_" + System.currentTimeMillis() + "_" + RandomUtil.randomString(5);
     }
 }

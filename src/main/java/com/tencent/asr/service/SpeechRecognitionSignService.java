@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.tencent.asr.service;
 
 import com.tencent.asr.model.AsrConfig;
@@ -44,7 +45,8 @@ class SpeechRecognitionSignService {
      * @param content
      * @return
      */
-    private TreeMap<String, Object> getParams(AsrConfig asrConfig, AsrRequest request, AsrRequestContent content) {
+    private TreeMap<String, Object> getParams(AsrConfig asrConfig, AsrRequest request,
+                                              AsrRequestContent content) {
         TMap<String, Object> treeMap = getRequestParamMap(asrConfig, request, content);
 
         treeMap.put("seq", content.getSeq());
@@ -58,8 +60,6 @@ class SpeechRecognitionSignService {
     }
 
 
-
-
     /**
      * 拼装参数 后期如果新增参数，需要在这个方法进行维护，同时需要在{@link AsrRequest} 维护对应的参数
      *
@@ -68,7 +68,8 @@ class SpeechRecognitionSignService {
      * @param content
      * @return
      */
-    private TreeMap<String, Object> getWsParams(AsrConfig asrConfig, AsrRequest request, AsrRequestContent content) {
+    private TreeMap<String, Object> getWsParams(AsrConfig asrConfig, AsrRequest request,
+                                                AsrRequestContent content) {
         TMap<String, Object> treeMap = getRequestParamMap(asrConfig, request, content);
         if (request.getExtendsParam() != null) {
             for (Map.Entry<String, Object> entry : request.getExtendsParam().entrySet()) {
@@ -94,7 +95,8 @@ class SpeechRecognitionSignService {
         }
     }
 
-    private TMap<String, Object> getRequestParamMap(AsrConfig asrConfig, AsrRequest request, AsrRequestContent content) {
+    private TMap<String, Object> getRequestParamMap(AsrConfig asrConfig,
+                                                    AsrRequest request, AsrRequestContent content) {
         TMap<String, Object> treeMap = new TMap<String, Object>();
         treeMap.put("secretid", asrConfig.getSecretId());
         treeMap.put("projectid", request.getProjectId());

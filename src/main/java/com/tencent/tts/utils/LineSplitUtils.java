@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.tencent.tts.utils;
 
 import com.tencent.tts.model.SpeechSynthesisSysConfig;
@@ -61,8 +62,9 @@ public class LineSplitUtils {
         String mark = SpeechSynthesisSysConfig.SEPARATOR_CHARS[charPosi];
         String[] items = StringUtils.split(line, mark);
         for (String item : items) {
-            if (items.length > 1 && notEndWithSeparator(item))
+            if (items.length > 1 && notEndWithSeparator(item)) {
                 item = item + mark; // 把符号补回来
+            }
             if (charPosi == SpeechSynthesisSysConfig.SEPARATOR_CHARS.length - 1) {
                 list.add(item); // 递归结束。
             } else if (item.length() <= SpeechSynthesisSysConfig.SEPARATOR_LENGTH_LIMIT) {
@@ -87,10 +89,12 @@ public class LineSplitUtils {
         String subRes = subItems[0] + "，";
         for (int i = 1; i < subItems.length; i++) {
             String sub = subItems[i];
-            if (sub.length() == 0)
+            if (sub.length() == 0) {
                 continue;
-            if (notEndWithSeparator(sub))
+            }
+            if (notEndWithSeparator(sub)) {
                 sub = sub + "，"; // 把逗号补回来
+            }
             if (subRes.length() + sub.length() > SpeechSynthesisSysConfig.SEPARATOR_LENGTH_LIMIT) {
                 resultList.add(subRes);
                 subRes = sub;
@@ -98,8 +102,9 @@ public class LineSplitUtils {
                 subRes += sub;
             }
         }
-        if (subRes.length() > 0)
+        if (subRes.length() > 0) {
             resultList.add(subRes);
+        }
     }
 
     private static boolean notEndWithSeparator(String str) {

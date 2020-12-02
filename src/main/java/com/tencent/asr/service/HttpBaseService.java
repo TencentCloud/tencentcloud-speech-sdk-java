@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.tencent.asr.service;
 
 import cn.hutool.core.collection.CollectionUtil;
@@ -30,9 +31,11 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.apache.http.ConnectionClosedException;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.concurrent.FutureCallback;
+import org.apache.http.impl.conn.ConnectionShutdownException;
 
 import java.io.IOException;
 import java.net.SocketTimeoutException;
@@ -91,11 +94,7 @@ public class HttpBaseService {
     /**
      * 缓存状态
      */
-    protected volatile Boolean cacheStatus = false;
-    /**
-     * 缓存重制的seq
-     */
-    protected volatile AtomicInteger cacheSeq = new AtomicInteger(0);
+    protected volatile boolean cacheStatus = false;
 
     /**
      * 结束标志
@@ -111,7 +110,7 @@ public class HttpBaseService {
     /**
      * httpClient service
      */
-    protected HttpClientService httpClientService = new HttpClientService();
+    protected HttpClientService httpClientService = HttpClientService.getInstance();
 
     /**
      * 记录请求的stamp
@@ -148,29 +147,37 @@ public class HttpBaseService {
     private Boolean begin = false;
 
     /**
+     * HttpBaseService
+     *
      * @param streamId              流的唯一标示
      * @param config                配置{@link AsrConfig}
      * @param request               请求参数{@link AsrRequest}
      * @param realTimeEventListener 结果回调函数{@link RealTimeEventListener}
      * @param baseEventListener     回调函数{@link BaseEventListener}
      */
-    public HttpBaseService(String streamId, AsrConfig config, AsrRequest request, RealTimeEventListener realTimeEventListener,
+    public HttpBaseService(String streamId, AsrConfig config, AsrRequest request,
+                           RealTimeEventListener realTimeEventListener,
                            BaseEventListener<AsrResponse> baseEventListener) {
         this.streamId = streamId;
         this.asrConfig = config;
         this.asrRequest = checkAsrRequest(request);
         this.realTimeEventListener = realTimeEventListener;
         this.baseEventListeners = baseEventListener;
-        staging = AsrRequestContent.builder().seq(0).end(0).voiceId(AsrUtils.getVoiceId(asrConfig.getAppId())).streamId(streamId).build();
+        staging = AsrRequestContent.builder().seq(0).end(0)
+                .voiceId(AsrUtils.getVoiceId(asrConfig.getAppId()))
+                .streamId(streamId).build();
         tractionManager = new TractionManager(asrConfig.getAppId());
     }
 
-    public HttpBaseService(String streamId, AsrConfig config, AsrRequest request, SpeechRecognitionListener speechRecognitionListener) {
+    public HttpBaseService(String streamId, AsrConfig config, AsrRequest request,
+                           SpeechRecognitionListener speechRecognitionListener) {
         this.streamId = streamId;
         this.asrConfig = config;
         this.asrRequest = checkAsrRequest(request);
         this.speechRecognitionListener = speechRecognitionListener;
-        staging = AsrRequestContent.builder().seq(0).end(0).voiceId(AsrUtils.getVoiceId(asrConfig.getAppId())).streamId(streamId).build();
+        staging = AsrRequestContent.builder().seq(0).end(0)
+                .voiceId(AsrUtils.getVoiceId(asrConfig.getAppId()))
+                .streamId(streamId).build();
         tractionManager = new TractionManager(asrConfig.getAppId());
     }
 
@@ -203,7 +210,8 @@ public class HttpBaseService {
             synchronized (this) {
                 cacheStatus = false;
                 expireTime = System.currentTimeMillis() + asrConfig.getWaitTime();
-                ReportService.ifLogMessage(staging.getVoiceId(), "Retransmission settings:" + JsonUtil.toJson(staging), true);
+                ReportService.ifLogMessage(staging.getVoiceId(),
+                        "Retransmission settings:" + JsonUtil.toJson(staging), true);
                 staging.setVoiceId(AsrUtils.getVoiceId(asrConfig.getAppId()));
                 staging.setEnd(0);
                 staging.setSeq(0);
@@ -228,8 +236,10 @@ public class HttpBaseService {
         //开启事物根据线程配置seq end voiceId
         AsrRequestContent temp = staging;
         int end = endFlag ? 1 : 0;
-        AsrRequestContent content = AsrRequestContent.builder().voiceId(temp.getVoiceId()).seq(temp.getSeq())
-                .end(end).bytes(bytes).streamId(temp.getStreamId()).costTime(System.currentTimeMillis()).build();
+        AsrRequestContent content = AsrRequestContent.builder()
+                .voiceId(temp.getVoiceId()).seq(temp.getSeq())
+                .end(end).bytes(bytes).streamId(temp.getStreamId())
+                .costTime(System.currentTimeMillis()).build();
         String stamp = speechRec(content);
         temp.setSeq(temp.getSeq() + 1);
         temp.setEnd(end);
@@ -243,6 +253,8 @@ public class HttpBaseService {
      * @return 请求唯一标示stamp
      */
     private String speechRec(AsrRequestContent content) {
+        asrRequest.setTimestamp(System.currentTimeMillis() / 1000);
+        asrRequest.setExpired((System.currentTimeMillis() / 1000) + 86400);
         String stamp = content.getStreamId() + "_asr_" + content.getVoiceId() + "_" + content.getSeq();
         String url = speechRecognitionSignService.signUrl(asrConfig, asrRequest, content);
         String sign = SignBuilder.createPostSign(url, asrConfig.getSecretKey(), asrRequest);
@@ -284,36 +296,38 @@ public class HttpBaseService {
      * @param sign        签名
      * @param tempRequest 请求参数
      */
-    private void asyncRecRequest(AsrConfig config, AsrRequestContent content, String stamp, String url, String sign, AsrRequest tempRequest) {
-        httpClientService.asrAsyncHttp(stamp, sign, url, config.getToken(), content, new FutureCallback<HttpResponse>() {
-            @Override
-            public void completed(HttpResponse httpResponse) {
-                AsrResponse asrResponse = null;
-                try {
-                    asrResponse = parseRecResponse(httpResponse, stamp);
-                } finally {
-                    processFinally(asrResponse, null, stamp, url, tempRequest, content);
-                    surplus.decrementAndGet();
-                }
-            }
+    private void asyncRecRequest(AsrConfig config, AsrRequestContent content,
+                                 String stamp, String url, String sign, AsrRequest tempRequest) {
+        httpClientService.asrAsyncHttp(stamp, sign, url, config.getToken(), content,
+                new FutureCallback<HttpResponse>() {
+                    @Override
+                    public void completed(HttpResponse httpResponse) {
+                        AsrResponse asrResponse = null;
+                        try {
+                            asrResponse = parseRecResponse(httpResponse, stamp);
+                        } finally {
+                            processFinally(asrResponse, null, stamp, url, tempRequest, content);
+                            surplus.decrementAndGet();
+                        }
+                    }
 
-            @Override
-            public void failed(Exception e) {
-                AsrResponse asrResponse = null;
-                try {
-                    //异常重试
-                    asrResponse = processException(e, stamp, sign, url, content, tempRequest, config);
-                } finally {
-                    processFinally(asrResponse, e, stamp, url, tempRequest, content);
-                    surplus.decrementAndGet();
-                }
-            }
+                    @Override
+                    public void failed(Exception e) {
+                        AsrResponse asrResponse = null;
+                        try {
+                            //异常重试
+                            asrResponse = processException(e, stamp, sign, url, content, tempRequest, config);
+                        } finally {
+                            processFinally(asrResponse, e, stamp, url, tempRequest, content);
+                            surplus.decrementAndGet();
+                        }
+                    }
 
-            @Override
-            public void cancelled() {
-                //do nothing
-            }
-        });
+                    @Override
+                    public void cancelled() {
+                        //do nothing
+                    }
+                });
     }
 
 
@@ -374,11 +388,12 @@ public class HttpBaseService {
     /**
      * 处理结果
      *
-     * @param asrResponse
-     * @param e
-     * @param stamp
+     * @param asrResponse asrResponse
+     * @param e           e
+     * @param stamp       stamp
      */
-    private void processFinally(AsrResponse asrResponse, Exception e, String stamp, String url, AsrRequest tempRequest, AsrRequestContent content) {
+    private void processFinally(AsrResponse asrResponse, Exception e, String stamp, String url,
+                                AsrRequest tempRequest, AsrRequestContent content) {
         content.setCostTime(System.currentTimeMillis() - content.getCostTime());
         if (asrResponse == null && content.getEnd() == 1) {
             asrResponse = new AsrResponse();
@@ -396,27 +411,38 @@ public class HttpBaseService {
             }
             //ReportService.ifLogMessage(stamp, "processFinally:" + JsonUtil.toJson(asrResponse), false);
             //同步结果返回是顺序的直接放到queue中
+            boolean isCommonError = e instanceof SocketTimeoutException
+                    || e instanceof ConnectionShutdownException
+                    || e instanceof ConnectionClosedException;
+            ReportService.report(asrResponse.getCode() == 0, String.valueOf(asrResponse.getCode()),
+                    asrConfig, streamId, tempRequest, asrResponse, url,
+                    asrResponse.getMessage(), content.getCostTime());
+            if (isCommonError) {
+                asrResponse.setCode(0);
+                asrResponse.setMessage("success");
+            }
             if (SpeechRecognitionSysConfig.ifSyncHttp) {
                 syncResponseQueue.add(asrResponse);
             } else {
                 resultQueue.add(stamp);
                 result.put(asrResponse.getStamp(), asrResponse);
             }
-            ReportService.report(asrResponse.getCode() == 0, String.valueOf(asrResponse.getCode()),
-                    asrConfig, streamId, tempRequest, asrResponse, url,
-                    asrResponse.getMessage(), content.getCostTime());
             //从下一个分片开始重新生成voiceId
-            if (AsrConstant.Code.ifInRetryCode(asrResponse.getCode())) {
+            if (AsrConstant.Code.ifInRetryCode(asrResponse.getCode()) && asrResponse.getVoiceId() != null
+                    && staging.getVoiceId().equals(asrResponse.getVoiceId())) {
                 cacheStatus = true;
-                cacheSeq.set(Math.max(asrResponse.getSeq(), cacheSeq.get()));
             }
             if (baseEventListeners != null) {
                 if (asrResponse.getCode() == AsrConstant.Code.SUCCESS.getCode()) {
                     baseEventListeners.success(asrResponse);
                 } else if (e != null) {
-                    baseEventListeners.fail(asrResponse, e);
-                }else{
-                    baseEventListeners.success(asrResponse);
+                    if (!isCommonError) {
+                        baseEventListeners.fail(asrResponse, e);
+                    }
+                } else {
+                    if (!AsrConstant.Code.ifInRetryCode(asrResponse.getCode())) {
+                        baseEventListeners.success(asrResponse);
+                    }
                 }
             }
         }
@@ -454,8 +480,8 @@ public class HttpBaseService {
         for (int retry = 0; retry < SpeechRecognitionSysConfig.retryRequestNum; retry++) {
             ReportService.ifLogMessage(stamp, "retry send request:" + retry, false);
             try {
-                Thread.sleep(50);
-                CloseableHttpResponse httpResponse = httpClientService.syncHttp(stamp, sign, url, asrConfig.getToken(), content);
+                CloseableHttpResponse httpResponse = httpClientService.syncHttp(stamp, sign, url,
+                        asrConfig.getToken(), content);
                 AsrResponse asrResponse = this.parseRecResponse(httpResponse, stamp);
                 if (asrResponse != null) {
                     ReportService.ifLogMessage(stamp, "retry send request  success :" + retry, false);
@@ -551,12 +577,13 @@ public class HttpBaseService {
      * @param config      config
      * @return
      */
-    private AsrResponse processException(Exception e, String stamp, String sign, String url, AsrRequestContent content, AsrRequest tempRequest, AsrConfig config) {
+    private AsrResponse processException(Exception e, String stamp, String sign, String url,
+                                         AsrRequestContent content, AsrRequest tempRequest, AsrConfig config) {
         AsrResponse asrResponse = null;
         if (SpeechRecognitionSysConfig.ifSyncHttp) {
             asrResponse = retryRecRequest(stamp, sign, url, content);
         }
-        if (!SpeechRecognitionSysConfig.ifSyncHttp && !(e instanceof SocketTimeoutException)) {
+        if (!SpeechRecognitionSysConfig.ifSyncHttp && !finishFlag.get()) {
             asrResponse = retryRecRequest(stamp, sign, url, content);
         }
         if (asrResponse == null) {
@@ -568,7 +595,7 @@ public class HttpBaseService {
             try {
                 asrResponse.setMessage(asrResponse.getMessage().substring(0, asrResponse.getMessage().indexOf("\n")));
             } catch (Exception exception) {
-
+                //ignore
             }
         }
         return asrResponse;
@@ -604,11 +631,12 @@ public class HttpBaseService {
                     //同步的处理
                     if (SpeechRecognitionSysConfig.ifSyncHttp) {
                         try {
-                            AsrResponse response = syncResponseQueue.poll(SpeechRecognitionSysConfig.waitResultTimeout, TimeUnit.MILLISECONDS);
+                            AsrResponse response = syncResponseQueue.poll(SpeechRecognitionSysConfig.waitResultTimeout,
+                                    TimeUnit.MILLISECONDS);
                             returnResult(response);
-                            if (response != null && response.getFinalSpeech() != null && response.getFinalSpeech() == 1) {
+                            if (response != null && response.getFinalSpeech() != null
+                                    && response.getFinalSpeech() == 1) {
                                 ReportService.ifLogMessage(response.getStamp(), "final Exit monitoring", false);
-                                closeClient();
                                 break;
                             }
                         } catch (InterruptedException e) {
@@ -620,6 +648,7 @@ public class HttpBaseService {
                             try {
                                 resultQueue.poll(SpeechRecognitionSysConfig.waitResultTimeout, TimeUnit.MILLISECONDS);
                             } catch (InterruptedException e) {
+                                //ignore
                             }
                             //包含结果
                             if (!requestStamps.isEmpty() && result.containsKey(requestStamps.get(0))) {
@@ -630,7 +659,6 @@ public class HttpBaseService {
                                     returnResult(response);
                                     if (response.getFinalSpeech() != null && response.getFinalSpeech() == 1) {
                                         ReportService.ifLogMessage(response.getStamp(), "final Exit monitoring", false);
-                                        closeClient();
                                         break;
                                     }
                                     result.remove(stamp);
@@ -647,11 +675,10 @@ public class HttpBaseService {
                             }
                             if (requestStamps.isEmpty() && finishFlag.get() && surplus.get() <= 0) {
                                 ReportService.ifLogMessage(staging.getVoiceId(), "Exit monitoring", false);
-                                closeClient();
                                 break;
                             }
                         } catch (RuntimeException e) {
-
+                            //ignore
                         }
                     }
                 }
@@ -674,11 +701,19 @@ public class HttpBaseService {
      *
      * @param audio 语音数据
      */
-    protected void sendData(byte[] audio) {
+    protected void sendData(byte[] audio, Boolean end) {
         if (audio == null) {
             return;
         }
-        sendData = ByteUtils.concat(sendData, audio);
+        if (!end || (end && sendData.length == 0)) {
+            sendData = ByteUtils.concat(sendData, audio);
+        }
+        //结束发送剩余数据
+        if (end) {
+            send(sendData, true);
+            sendExpireTime = System.currentTimeMillis() + asrConfig.getWaitTime() / 2;
+            return;
+        }
         if (sendData.length > asrRequest.getCutLength()) {
             int posi = 0;
             while (sendData.length - posi >= asrRequest.getCutLength()) {
@@ -688,15 +723,12 @@ public class HttpBaseService {
             sendData = ByteUtils.subBytes(sendData, posi, sendData.length - posi);
             sendExpireTime = System.currentTimeMillis() + asrConfig.getWaitTime() / 2;
         }
-        //结束发送剩余数据
-        if (endFlag.get()) {
-            send(sendData, true);
-        }
         //避免因为缓冲区数据未满，造成最后的数据不进行发送
-        if (System.currentTimeMillis() > sendExpireTime) {
+        if (System.currentTimeMillis() > sendExpireTime || staging.getSeq() == 0) {
             send(sendData, false);
             sendExpireTime = System.currentTimeMillis() + asrConfig.getWaitTime() / 2;
             sendData = new byte[0];
+            return;
         }
     }
 
@@ -711,7 +743,8 @@ public class HttpBaseService {
             return;
         }
         List<SpeechRecognitionResponseResult> resultList = asrResponse.getResultList();
-        SpeechRecognitionResponse response = JsonUtil.fromJson(JsonUtil.toJson(asrResponse), SpeechRecognitionResponse.class);
+        SpeechRecognitionResponse response = JsonUtil.fromJson(JsonUtil.toJson(asrResponse),
+                SpeechRecognitionResponse.class);
         if (asrResponse != null && asrResponse.getCode() == 0) {
             if (CollectionUtil.isNotEmpty(resultList)) {
                 resultList.forEach(item -> {
@@ -722,7 +755,8 @@ public class HttpBaseService {
                     } else if (item.getSliceType() == 2) {
                         //解决sliceType只有2的情况
                         if (!begin && response.getResult() != null) {
-                            SpeechRecognitionResponse beginResp = JsonUtil.fromJson(JsonUtil.toJson(response), SpeechRecognitionResponse.class);
+                            SpeechRecognitionResponse beginResp = JsonUtil.fromJson(JsonUtil.toJson(response),
+                                    SpeechRecognitionResponse.class);
                             beginResp.getResult().setSliceType(0);
                             speechRecognitionListener.onSentenceBegin(beginResp);
                         }

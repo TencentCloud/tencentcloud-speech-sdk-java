@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.tencent.asr.model;
 
 import com.tencent.asr.constant.AsrConstant;
@@ -24,11 +25,9 @@ import lombok.Setter;
 public class SpeechRecognitionSysConfig {
 
     /**
-     * 1.0.4以后版本不再使用该属性
-     * okhttp控制支持最大请求数 根据业务需求设置
-     * 默认：64，默认的64一般满足不了业务需要。这个值一般要大于maxRequestPerHost，如果这个值小于maxRequestPerHost会导致，请求单个主机的并发不可能超过maxRequest.
+     * IOThread
      */
-    public static Integer maxRequests = 12;
+    public static Integer maxRequests = Runtime.getRuntime().availableProcessors();
 
     /**
      * 1.0.4以后版本不再使用该属性
@@ -56,21 +55,21 @@ public class SpeechRecognitionSysConfig {
     /**
      * 响应超时时间
      */
-    public static int socketTimeout = 6000;
+    public static int socketTimeout = 120000;
 
     /**
      * 连接超时时间
      */
-    public static int connectTimeout = 500;
+    public static int connectTimeout = 1000;
 
     /**
      * 连接池获取连接超时时间
      */
-    public static int connectionRequestTimeout = 500;
+    public static int connectionRequestTimeout = 1500;
 
 
-    public static int defaultMaxPerRoute = 100;
-
+    public static int defaultMaxPerRoute = 2000;
+    public static int MaxTotal = 2000;
     /**
      * 是否同步方式
      */
@@ -78,5 +77,18 @@ public class SpeechRecognitionSysConfig {
 
     public static long waitResultTimeout = 1000;
 
-    public static boolean interestOpQueued = false;
+    public static boolean interestOpQueued = true;
+
+    /**
+     * wsWriteTimeOut
+     */
+    public static int wsWriteTimeOut = 60000;
+    /**
+     * wsReadTimeOut
+     */
+    public static int wsReadTimeOut = 60000;
+    /**
+     * wsConnectTimeOut
+     */
+    public static int wsConnectTimeOut = 60000;
 }

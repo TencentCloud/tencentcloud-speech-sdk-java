@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.tencent.asr.service;
 
 import cn.hutool.core.lang.Assert;
@@ -33,7 +34,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 /**
  * Asr客户端
  */
-@Deprecated
 public class AsrClient implements TClient {
     /**
      * 配置
@@ -84,7 +84,8 @@ public class AsrClient implements TClient {
      */
     @Override
     public void start() {
-        StatService.setConfig(asrConfig.getSecretId(), asrConfig.getSecretKey(),String.valueOf(asrConfig.getAppId()),null);
+        StatService.setConfig(asrConfig.getSecretId(), asrConfig.getSecretKey(),
+                String.valueOf(asrConfig.getAppId()), null);
         StatService.startReportStat();
     }
 
@@ -112,7 +113,7 @@ public class AsrClient implements TClient {
     public TCall newCall(String streamId, AsrRequest request, BaseEventListener<AsrResponse> baseEventListener,
                          RealTimeEventListener realTimeEventListener, AsrConstant.DataType type) {
         if (AsrConstant.DataType.BYTE.equals(type)) {
-            SpeechHttpRecognizer speechRecognizer= new SpeechHttpRecognizer(streamId, asrConfig, request,
+            SpeechHttpRecognizer speechRecognizer = new SpeechHttpRecognizer(streamId, asrConfig, request,
                     realTimeEventListener, baseEventListener);
             speechRecognizer.start();
             return speechRecognizer;

@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.tencent.tts.service;
 
 import com.tencent.core.help.SignHelper;
@@ -25,11 +26,11 @@ import java.util.TreeMap;
 
 class SpeechSynthesisSignService {
 
-    public String signUrl(SpeechSynthesisConfig speechSynthesisConfig, SpeechSynthesisRequest request, SpeechSynthesisRequestContent content, TreeMap<String, Object> map) {
+    public String signUrl(SpeechSynthesisConfig speechSynthesisConfig, SpeechSynthesisRequest request,
+                          SpeechSynthesisRequestContent content, TreeMap<String, Object> map) {
         String paramUrl = SignHelper.createUrl(map);
-        return speechSynthesisConfig.getSignUrl()  + paramUrl;
+        return speechSynthesisConfig.getSignUrl() + paramUrl;
     }
-
 
 
     /**
@@ -40,7 +41,9 @@ class SpeechSynthesisSignService {
      * @param content
      * @return
      */
-    public static TreeMap<String, Object> getParams(SpeechSynthesisConfig speechSynthesisConfig, SpeechSynthesisRequest request, SpeechSynthesisRequestContent content) {
+    public static TreeMap<String, Object> getParams(SpeechSynthesisConfig speechSynthesisConfig,
+                                                    SpeechSynthesisRequest request,
+                                                    SpeechSynthesisRequestContent content) {
         TMap<String, Object> treeMap = new TMap<String, Object>();
         treeMap.put("SecretId", speechSynthesisConfig.getSecretId());
         treeMap.put("Text", content.getText());
@@ -48,9 +51,9 @@ class SpeechSynthesisSignService {
         treeMap.put("ModelType", request.getModelType());
         treeMap.put("Volume", request.getVolume());
         //这里需要注意，后段解析float 如果是0.0则解析为0 如果是1.1则解析为1.1
-        if(request.getSpeed().intValue()==request.getSpeed()){
+        if (request.getSpeed().intValue() == request.getSpeed()) {
             treeMap.put("Speed", request.getSpeed().intValue());
-        }else{
+        } else {
             treeMap.put("Speed", request.getSpeed());
         }
         treeMap.put("VoiceType", request.getVoiceType());
@@ -71,8 +74,6 @@ class SpeechSynthesisSignService {
         }
         return treeMap;
     }
-
-
 
 
     /**

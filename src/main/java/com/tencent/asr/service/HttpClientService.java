@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.tencent.asr.service;
 
 import com.tencent.asr.model.AsrRequestContent;
@@ -41,7 +42,11 @@ import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.concurrent.Future;
 
+/**
+ * HttpClientService
+ */
 public class HttpClientService {
 
     private static final String STREAM_TYPE = "application/octet-stream";
@@ -58,7 +63,17 @@ public class HttpClientService {
 
     private PoolingNHttpClientConnectionManager connManager;
 
+    private volatile boolean closed = false;
 
+    private static HttpClientService ins = new HttpClientService();
+
+    public static HttpClientService getInstance() {
+        return ins;
+    }
+
+    /**
+     * HttpClientService
+     */
     public HttpClientService() {
         this.requestConfig = RequestConfig.custom()
                 /*  .setConnectTimeout(SpeechRecognitionSysConfig.connectTimeout)
@@ -75,22 +90,24 @@ public class HttpClientService {
         try {
             ioReactor = new DefaultConnectingIOReactor(ioReactorConfig);
         } catch (IOReactorException e) {
+            //ignore
         }
         this.connManager = new PoolingNHttpClientConnectionManager(ioReactor);
-        this.connManager.setMaxTotal(SpeechRecognitionSysConfig.defaultMaxPerRoute);
+        this.connManager.setMaxTotal(SpeechRecognitionSysConfig.MaxTotal);
         this.connManager.setDefaultMaxPerRoute(SpeechRecognitionSysConfig.defaultMaxPerRoute);
         this.asyncClient = createAsyncHttpClient();
         this.asyncClient.start();
         this.syncClient = createSyncHttpClient();
     }
 
-
     public void closeClient() {
         try {
+            closed = true;
+            ReportService.ifLogMessage("", "close client", false);
             this.syncClient.close();
             this.asyncClient.close();
         } catch (Exception e) {
-
+            //ignore
         }
     }
 
@@ -103,17 +120,19 @@ public class HttpClientService {
      * @param item     请求内容
      * @param callback 回调
      */
-    public void asrAsyncHttp(String stamp, String sign, String url, String token, AsrRequestContent item, FutureCallback<HttpResponse> callback) {
-        ReportService.ifLogMessage(stamp, url, false);
-        CloseableHttpAsyncClient asyncClient = getAsyncClient();
-        HttpPost httpPost = new HttpPost(url);
-        httpPost.addHeader("Authorization", sign);
-        httpPost.addHeader("Content-Type", STREAM_TYPE);
-        if (StringUtils.isNotEmpty(token)) {
-            httpPost.addHeader("X-TC-Token", token);
+    public void asrAsyncHttp(String stamp, String sign, String url, String token,
+                             AsrRequestContent item, FutureCallback<HttpResponse> callback) {
+        if (!closed) {
+            ReportService.ifLogMessage(stamp, url, false);
+            HttpPost httpPost = new HttpPost(url);
+            httpPost.addHeader("Authorization", sign);
+            httpPost.addHeader("Content-Type", STREAM_TYPE);
+            if (StringUtils.isNotEmpty(token)) {
+                httpPost.addHeader("X-TC-Token", token);
+            }
+            httpPost.setEntity(new ByteArrayEntity(item.getBytes()));
+            Future future = asyncClient.execute(httpPost, context, callback);
         }
-        httpPost.setEntity(new ByteArrayEntity(item.getBytes()));
-        asyncClient.execute(httpPost, context, callback);
     }
 
 
@@ -126,16 +145,20 @@ public class HttpClientService {
      * @param item  请求内容
      * @return CloseableHttpResponse
      */
-    public CloseableHttpResponse syncHttp(String stamp, String sign, String url, String token, AsrRequestContent item) throws IOException {
-        ReportService.ifLogMessage(stamp, "url:" + url, false);
-        HttpPost httpPost = new HttpPost(url);
-        httpPost.addHeader("Authorization", sign);
-        httpPost.addHeader("Content-Type", STREAM_TYPE);
-        if (StringUtils.isNotEmpty(token)) {
-            httpPost.addHeader("X-TC-Token", token);
+    public CloseableHttpResponse syncHttp(String stamp, String sign, String url,
+                                          String token, AsrRequestContent item) throws IOException {
+        if (!closed) {
+            ReportService.ifLogMessage(stamp, "url:" + url, false);
+            HttpPost httpPost = new HttpPost(url);
+            httpPost.addHeader("Authorization", sign);
+            httpPost.addHeader("Content-Type", STREAM_TYPE);
+            if (StringUtils.isNotEmpty(token)) {
+                httpPost.addHeader("X-TC-Token", token);
+            }
+            httpPost.setEntity(new ByteArrayEntity(item.getBytes()));
+            return getSyncClient().execute(httpPost, context);
         }
-        httpPost.setEntity(new ByteArrayEntity(item.getBytes()));
-        return getSyncClient().execute(httpPost, context);
+        return null;
     }
 
 
@@ -182,9 +205,13 @@ public class HttpClientService {
      * @return CloseableHttpAsyncClient
      */
     private CloseableHttpAsyncClient getAsyncClient() {
-        if (this.asyncClient == null) {
-            this.asyncClient = createAsyncHttpClient();
-            this.asyncClient.start();
+        if (this.asyncClient == null || !asyncClient.isRunning()) {
+            synchronized (this) {
+                if (this.asyncClient == null || !asyncClient.isRunning()) {
+                    this.asyncClient = createAsyncHttpClient();
+                    this.asyncClient.start();
+                }
+            }
         }
         return asyncClient;
     }
@@ -226,6 +253,7 @@ public class HttpClientService {
                 .setSocketTimeout(SpeechRecognitionSysConfig.socketTimeout)
                 .setConnectionRequestTimeout(SpeechRecognitionSysConfig.connectionRequestTimeout)
                 .build();
-        return HttpClients.custom().setConnectionManager(manager).setDefaultRequestConfig(requestConfig).setConnectionManagerShared(true).build();
+        return HttpClients.custom().setConnectionManager(manager)
+                .setDefaultRequestConfig(requestConfig).build();
     }
 }

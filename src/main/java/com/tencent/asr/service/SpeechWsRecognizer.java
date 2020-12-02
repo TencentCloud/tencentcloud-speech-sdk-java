@@ -13,14 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.tencent.asr.service;
 
 import cn.hutool.core.map.MapUtil;
 import com.tencent.asr.constant.AsrConstant;
-import com.tencent.asr.model.AsrConfig;
-import com.tencent.asr.model.AsrRequestContent;
-import com.tencent.asr.model.SpeechRecognitionRequest;
-import com.tencent.asr.model.SpeechRecognitionResponse;
+import com.tencent.asr.model.*;
 import com.tencent.asr.utils.AsrUtils;
 import com.tencent.core.service.ReportService;
 import com.tencent.core.utils.JsonUtil;
@@ -122,7 +120,8 @@ public class SpeechWsRecognizer implements SpeechRecognizer {
      * @param request  请求参数
      * @param listener 回调
      */
-    public SpeechWsRecognizer(String streamId, AsrConfig config, SpeechRecognitionRequest request, SpeechRecognitionListener listener) {
+    public SpeechWsRecognizer(String streamId, AsrConfig config,
+                              SpeechRecognitionRequest request, SpeechRecognitionListener listener) {
         this.asrConfig = config;
         this.asrRequest = request;
         //这里使用到voiceId
@@ -168,8 +167,17 @@ public class SpeechWsRecognizer implements SpeechRecognizer {
             createWebsocket();
             //发送数据
             ReportService.ifLogMessage(getId(), "send " + adder.get() + " package", false);
+            boolean success = webSocket.send(ByteString.of(data));
+            ReportService.ifLogMessage(getId(), "send " + adder.get() + " package " + success, false);
             adder.incrementAndGet();
-            webSocket.send(ByteString.of(data));
+            if (!success) {
+                for (int i = 0; i < SpeechRecognitionSysConfig.retryRequestNum; i++) {
+                    success = webSocket.send(ByteString.of(data));
+                    if (success) {
+                        break;
+                    }
+                }
+            }
         }
     }
 
@@ -234,9 +242,9 @@ public class SpeechWsRecognizer implements SpeechRecognizer {
                 super.onFailure(webSocket, t, response);
                 isConnect = false;
                 if (t.getMessage() != null && !t.getMessage().equals("Socket closed")) {
-                    ReportService.ifLogMessage(getId(), "onFailure:reconnect," + t.getMessage() + t.getLocalizedMessage(), true);
+                    ReportService.ifLogMessage(getId(), "onFailure:reconnect,"
+                            + t.getMessage() + t.getLocalizedMessage(), true);
                     //连接中断则重新连接
-                    webSocket.close(1002, "onFailure");
                     reconnect(new byte[0]);
                     return;
                 }
@@ -249,7 +257,8 @@ public class SpeechWsRecognizer implements SpeechRecognizer {
                     rs.setStreamId(asrRequestContent.getStreamId());
                     rs.setVoiceId(asrRequestContent.getVoiceId());
                     ReportService.ifLogMessage(getId(), "onFailure", false);
-                    ReportService.report(false, String.valueOf(rs.getCode()),asrConfig, getId(), asrRequest, rs, asrConfig.getWsUrl(), t.getMessage());
+                    ReportService.report(false, String.valueOf(rs.getCode()), asrConfig, getId(),
+                            asrRequest, rs, asrConfig.getWsUrl(), t.getMessage());
                     listener.onFail(rs);
                 }
             }
@@ -316,7 +325,8 @@ public class SpeechWsRecognizer implements SpeechRecognizer {
             } else if (response.getResult().getSliceType() == 2) {
                 //解决一句话sliceType结果只有2的情况
                 if (!begin) {
-                    SpeechRecognitionResponse beginResp = JsonUtil.fromJson(JsonUtil.toJson(response), SpeechRecognitionResponse.class);
+                    SpeechRecognitionResponse beginResp = JsonUtil.fromJson(JsonUtil.toJson(response),
+                            SpeechRecognitionResponse.class);
                     beginResp.getResult().setSliceType(0);
                     listener.onSentenceBegin(beginResp);
                 }
@@ -344,7 +354,8 @@ public class SpeechWsRecognizer implements SpeechRecognizer {
 
 
     private String getId() {
-        return asrRequestContent.getStreamId() + "_" + asrRequestContent.getVoiceId();
+        return asrRequestContent.getStreamId()
+                + "_" + asrRequestContent.getVoiceId();
     }
 
 
@@ -376,6 +387,8 @@ public class SpeechWsRecognizer implements SpeechRecognizer {
                 lock.lock();
                 if (!isConnect || webSocket == null) {
                     ReportService.ifLogMessage(getId(), "create websocket", false);
+                    asrRequest.setTimestamp(System.currentTimeMillis() / 1000);
+                    asrRequest.setExpired(System.currentTimeMillis() / 1000 + 86400);
                     String url = speechRecognitionSignService.signWsUrl(asrConfig, asrRequest, asrRequestContent);
                     String sign = SignBuilder.createGetSign(url, asrConfig.getSecretKey(), asrRequest);
                     WebSocketListener webSocketListener = createWebSocketListener();

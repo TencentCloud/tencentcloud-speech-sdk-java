@@ -1,3 +1,19 @@
+/*
+ * Copyright (c) 2017-2018 THL A29 Limited, a Tencent company. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.tencent.core.service;
 
 
@@ -13,6 +29,8 @@ import net.jodah.expiringmap.ExpirationPolicy;
 import net.jodah.expiringmap.ExpiringMap;
 import org.apache.commons.lang3.StringUtils;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
@@ -41,7 +59,7 @@ public class ReportService {
                 filterRepeatError(config, id, request, response, url, e, delayTime);
             }
         } catch (Exception exception) {
-
+            // e.printStackTrace();
         }
     }
 
@@ -89,9 +107,11 @@ public class ReportService {
      * @param url      url
      * @param e        错误
      */
-    public static void reportError(TConfig config, String id, Object request, Object response, String url, String e, long delayTime) {
+    public static void reportError(TConfig config, String id, Object request,
+                                   Object response, String url, String e, long delayTime) {
         ReportInfo reportInfo = new ReportInfo();
-        ReportInfo.Log log = ReportInfo.Log.builder().request(request).url(url).delayTime(delayTime).response(response).time(Tutils.getNowData()).build();
+        ReportInfo.Log log = ReportInfo.Log.builder().request(request).url(url).delayTime(delayTime)
+                .response(response).time(Tutils.getNowData()).build();
         reportInfo.setLog(JsonUtil.toJson(log));
         ReportInfo.AppInfo appInfo = ReportInfo.getAppInfo(e, "_ERROR");
         reportInfo.setAppInfo(JsonUtil.toJson(appInfo));
@@ -133,12 +153,13 @@ public class ReportService {
      * @param error   是否异常日志
      */
     public static void ifLogMessage(String id, String message, Boolean error) {
-        id = Optional.ofNullable(id).orElse("");
         if (GlobalConfig.ifLog) {
+            id = Optional.ofNullable(id).orElse("");
+            String date = LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME);
             if (error) {
-                System.out.println("[" + id + "]" + message);
+                System.out.println(date + " [ERROR " + id + "]" + message);
             } else {
-                System.out.println("[" + id + "]" + message);
+                System.out.println(date + " [INFO " + id + "]" + message);
             }
         }
     }

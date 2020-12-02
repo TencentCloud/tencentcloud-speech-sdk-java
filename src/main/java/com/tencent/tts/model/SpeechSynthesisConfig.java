@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.tencent.tts.model;
 
 import com.tencent.core.model.TConfig;
@@ -26,7 +27,7 @@ import java.util.Optional;
 @Getter
 public class SpeechSynthesisConfig extends TConfig {
     /**
-     * 是	本接口取值：TextToStreamAudio，不可更改。
+     * 是本接口取值：TextToStreamAudio，不可更改。
      */
     private String action;
 
@@ -46,7 +47,8 @@ public class SpeechSynthesisConfig extends TConfig {
     private String logUrl;
 
     @Builder
-    public SpeechSynthesisConfig(Long appId, String secretKey, String secretId, String ttsUrl, String signUrl, String logUrl,String token) {
+    public SpeechSynthesisConfig(Long appId, String secretKey, String secretId,
+                                 String ttsUrl, String signUrl, String logUrl,String token) {
         super(secretId, secretKey, appId,token);
         this.ttsUrl = Optional.ofNullable(ttsUrl).orElse("https://tts.cloud.tencent.com/stream");
         this.signUrl = Optional.ofNullable(signUrl).orElse("https://tts.cloud.tencent.com/stream");

@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.tencent.core.utils;
 
 import java.io.*;
@@ -58,17 +59,26 @@ public class ByteUtils {
         return target;
     }
 
-
+    /**
+     * subToSmallBytes
+     *
+     * @param bs        bs
+     * @param minLength minLength
+     * @param maxLength maxLength
+     * @return List
+     */
     public static List<byte[]> subToSmallBytes(byte[] bs, int minLength, int maxLength) {
         int length = bs.length;
-        if (maxLength > length)
+        if (maxLength > length) {
             maxLength = length;
+        }
         List<byte[]> list = new ArrayList<byte[]>();
         int posi = 0;
         while (posi < length) {
             int randomLen = getRandomValue(minLength, maxLength);
-            if (posi + randomLen > length)
+            if (posi + randomLen > length) {
                 randomLen = length - posi;
+            }
             list.add(subBytes(bs, posi, randomLen));
             posi += randomLen;
         }
@@ -84,36 +94,17 @@ public class ByteUtils {
      * @param subLen 切成指定的大小。
      * @return 字节数组
      */
-    public static List<byte[]> subToSmallBytes(File file, int subLen) {
-        List<byte[]> list = new ArrayList<byte[]>();
-        InputStream inputStream = null;
-        int available = 0, readLength = 0;
-        byte[] subBytes = new byte[subLen];
-        try {
-            inputStream = new FileInputStream(file);
-            available = inputStream.available();
-            while (available > 0) {
-                subBytes = new byte[subLen]; // 每次使用新的字节数组，避免add到缓存中的数组是同一条，造成异常。
-                readLength = inputStream.read(subBytes);
-                if (readLength == subLen) {
-                    list.add(subBytes);
-                } else if (readLength > 0) {
-                    list.add(ByteUtils.subBytes(subBytes, 0, readLength));
-                }
-                available = inputStream.available();
-            }
-        } catch (IOException e) {
-            System.err.println("Unexpected IOException: " + e.getMessage());
-        } finally {
-            try {
-                inputStream.close();
-            } catch (Exception e) {
-                // ignore
-            }
-        }
-        return list;
+    public static List<byte[]> subToSmallBytes(File file, int subLen) throws FileNotFoundException {
+        return subToSmallBytes(new FileInputStream(file), subLen);
     }
 
+    /**
+     * 切分成小的数组返回，数组大小为一个固定的值。
+     *
+     * @param inputStream inputStream
+     * @param subLen      subLen
+     * @return
+     */
     public static List<byte[]> subToSmallBytes(InputStream inputStream, int subLen) {
         List<byte[]> list = new ArrayList<byte[]>();
         int available = 0, readLength = 0;

@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.tencent;
 
 import cn.hutool.core.lang.Assert;
@@ -56,10 +57,27 @@ public class SpeechClient {
     private SpeechClient() {
     }
 
+    /**
+     * 创建实例
+     *
+     * @param appId     appId
+     * @param secretId  secretId
+     * @param secretKey secretKey
+     * @return SpeechClient
+     */
     public static SpeechClient newInstance(String appId, String secretId, String secretKey) {
         return newInstance(appId, secretId, secretKey, null);
     }
 
+    /**
+     * 创建实例
+     *
+     * @param appId     appId
+     * @param secretId  secretId
+     * @param secretKey secretKey
+     * @param token     token
+     * @return SpeechClient
+     */
     public static SpeechClient newInstance(String appId, String secretId, String secretKey, String token) {
         Assert.isFalse(appId == null, "appId Cannot be empty");
         Assert.notBlank(secretKey, "secretKey Cannot be empty");
@@ -101,7 +119,8 @@ public class SpeechClient {
      * @param eventListener          回调
      * @return SpeechSynthesizer
      */
-    public SpeechSynthesizer newSpeechSynthesizer(SpeechSynthesisRequest speechSynthesisRequest, SpeechSynthesisListener eventListener) {
+    public SpeechSynthesizer newSpeechSynthesizer(SpeechSynthesisRequest speechSynthesisRequest,
+                                                  SpeechSynthesisListener eventListener) {
         SpeechSynthesisConfig config = SpeechSynthesisConfig.builder()
                 .appId(Long.valueOf(this.appId))
                 .secretId(this.secretId)
@@ -119,7 +138,8 @@ public class SpeechClient {
      * @param speechRecognitionListener 回调
      * @return SpeechRecognizer
      */
-    public SpeechRecognizer newSpeechRecognizer(SpeechRecognitionRequest request, SpeechRecognitionListener speechRecognitionListener) {
+    public SpeechRecognizer newSpeechRecognizer(SpeechRecognitionRequest request,
+                                                SpeechRecognitionListener speechRecognitionListener) {
         AsrConfig config = AsrConfig.builder()
                 .appId(this.appId)
                 .secretId(this.secretId)
@@ -127,11 +147,14 @@ public class SpeechClient {
                 .token(token)
                 .build();
         if (request.getEngineModelType() == null) {
-            throw new RuntimeException("engineModelType can not be null,please set SpeechRecognitionRequest EngineModelType !!");
+            throw new RuntimeException("engineModelType can not be null,please "
+                    + "set SpeechRecognitionRequest EngineModelType !!");
         }
         if (AsrConstant.RequestWay.Http.equals(SpeechRecognitionSysConfig.requestWay)) {
-            return new SpeechHttpRecognizer(RandomUtil.randomString(8), config, request, speechRecognitionListener);
+            return new SpeechHttpRecognizer(RandomUtil.randomString(8),
+                    config, request, speechRecognitionListener);
         }
-        return new SpeechWsRecognizer(RandomUtil.randomString(8), config, request, speechRecognitionListener);
+        return new SpeechWsRecognizer(RandomUtil.randomString(8),
+                config, request, speechRecognitionListener);
     }
 }

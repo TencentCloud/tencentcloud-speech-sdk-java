@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.tencent.core.utils;
 
 import com.tencent.asr.model.AsrRequest;
@@ -80,22 +81,22 @@ public class SignBuilder {
         validateRequestType(requestType);
         String url = serverUrl.toLowerCase();
         int position = 0;
-        String strToBeEncoded=serverUrl;
+        String strToBeEncoded = serverUrl;
         if (url.contains("https://")) {
             position = 8;
-            strToBeEncoded= requestType + serverUrl.substring(position);
+            strToBeEncoded = requestType + serverUrl.substring(position);
         }
         if (url.contains("http://")) {
             position = 7;
-            strToBeEncoded= requestType + serverUrl.substring(position);
+            strToBeEncoded = requestType + serverUrl.substring(position);
         }
         if (url.contains("ws://")) {
             position = 5;
-            strToBeEncoded=serverUrl.substring(position);
+            strToBeEncoded = serverUrl.substring(position);
         }
         if (url.contains("wss://")) {
             position = 6;
-            strToBeEncoded=serverUrl.substring(position);
+            strToBeEncoded = serverUrl.substring(position);
         }
 
         if (request != null) {
@@ -115,7 +116,8 @@ public class SignBuilder {
      * @param request     请求参数
      * @return sign
      */
-    public static String createSignAndUrlEncode(String serverUrl, String secretKey, String requestType, AsrRequest request) {
+    public static String createSignAndUrlEncode(String serverUrl, String secretKey,
+                                                String requestType, AsrRequest request) {
         validateRequestType(requestType);
         String sign = createSign(serverUrl, secretKey, requestType, request);
         try {
@@ -146,7 +148,9 @@ public class SignBuilder {
     }
 
     private static void validateRequestType(String requestType) {
-        if (requestType == null || !VALIDE_REQUEST_TYPES.contains(requestType))
-            throw new IllegalArgumentException("Unsupported request type: " + requestType + ", must be: GET or POST");
+        if (requestType == null || !VALIDE_REQUEST_TYPES.contains(requestType)) {
+            throw new IllegalArgumentException("Unsupported request type: "
+                    + requestType + ", must be: GET or POST");
+        }
     }
 }

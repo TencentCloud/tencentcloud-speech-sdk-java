@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.tencent.core.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -96,11 +97,11 @@ public class LogStatistics {
      * 失败分类统计（按code统计）
      */
     @JsonProperty(value = "FailCodeStat")
-    private ConcurrentHashMap<String,AtomicInteger> FailCodeStat;
+    private ConcurrentHashMap<String, AtomicInteger> FailCodeStat;
 
 
     @JsonProperty(value = "DelayTimeStat")
-    private ConcurrentHashMap<String,AtomicInteger> delayTimeStat;
+    private ConcurrentHashMap<String, AtomicInteger> delayTimeStat;
 
     /**
      * 成功率
@@ -112,8 +113,8 @@ public class LogStatistics {
     private String id;
 
 
-    public static LogStatistics createLogStatistics(){
-        LogStatistics statistics=new LogStatistics();
+    public static LogStatistics createLogStatistics() {
+        LogStatistics statistics = new LogStatistics();
         statistics.setStreamNum(new AtomicInteger(0));
         statistics.setVoiceIdNum(new AtomicInteger(0));
         statistics.setReqNum(new AtomicInteger(0));
@@ -128,7 +129,7 @@ public class LogStatistics {
         return statistics;
     }
 
-    public static LogStatistics resetLogStatistics(LogStatistics statistics){
+    public static LogStatistics resetLogStatistics(LogStatistics statistics) {
         statistics.getStreamNum().set(0);
         statistics.getVoiceIdNum().set(0);
         statistics.getReqNum().set(0);

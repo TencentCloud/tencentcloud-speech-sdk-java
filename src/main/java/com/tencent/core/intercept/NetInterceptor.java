@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.tencent.core.intercept;
 
+package com.tencent.core.intercept;
 
 
 import okhttp3.Interceptor;
@@ -28,7 +28,7 @@ public class NetInterceptor implements Interceptor {
     @Override
     public Response intercept(Chain chain) throws IOException {
         Request request = chain.request().newBuilder()
-                .addHeader("Connection","close").build();
+                .addHeader("Connection", "close").build();
 
         return chain.proceed(request);
 

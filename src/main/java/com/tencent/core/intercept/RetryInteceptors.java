@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.tencent.core.intercept;
 
 import com.tencent.core.service.ReportService;
@@ -58,7 +59,7 @@ public class RetryInteceptors implements Interceptor {
                 response.close();
             }
         } catch (Exception e) {
-
+            //ignore
         }
 
     }

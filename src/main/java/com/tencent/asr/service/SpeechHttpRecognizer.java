@@ -1,3 +1,19 @@
+/*
+ * Copyright (c) 2017-2018 THL A29 Limited, a Tencent company. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.tencent.asr.service;
 
 import com.tencent.asr.constant.AsrConstant;
@@ -17,11 +33,13 @@ public class SpeechHttpRecognizer extends HttpBaseService implements TCall<byte[
     private AtomicBoolean startFlag = new AtomicBoolean(false);
 
 
-    public SpeechHttpRecognizer(String streamId, AsrConfig config, AsrRequest request, SpeechRecognitionListener speechRecognitionListener) {
+    public SpeechHttpRecognizer(String streamId, AsrConfig config, AsrRequest request,
+                                SpeechRecognitionListener speechRecognitionListener) {
         super(streamId, config, request, speechRecognitionListener);
     }
 
-    public SpeechHttpRecognizer(String streamId, AsrConfig config, AsrRequest request, RealTimeEventListener realTimeEventListener,
+    public SpeechHttpRecognizer(String streamId, AsrConfig config, AsrRequest request,
+                                RealTimeEventListener realTimeEventListener,
                                 BaseEventListener<AsrResponse> baseEventListener) {
         super(streamId, config, request, realTimeEventListener, baseEventListener);
     }
@@ -94,8 +112,9 @@ public class SpeechHttpRecognizer extends HttpBaseService implements TCall<byte[
         }
         ReportService.ifLogMessage(staging.getStreamId(), "speech end", false);
         endFlag.set(true);
-        byte[] data = asrRequest.getVoiceFormat() != AsrConstant.VoiceFormat.silk.getFormatId() ? new byte[2] : new byte[1];
-        write(data);
+        boolean flag = asrRequest.getVoiceFormat() != AsrConstant.VoiceFormat.silk.getFormatId();
+        byte[] data = flag ? new byte[2] : new byte[1];
+        sendData(data,true);
         after();
         finishFlag.set(true);
         return finishFlag.get();
@@ -114,6 +133,6 @@ public class SpeechHttpRecognizer extends HttpBaseService implements TCall<byte[
         if (finishFlag.get()) {
             return;
         }
-        sendData(data);
+        sendData(data,false);
     }
 }

@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.tencent.tts.service;
 
 import cn.hutool.core.util.RandomUtil;
@@ -26,6 +27,7 @@ import com.tencent.tts.model.SpeechSynthesisConfig;
 import com.tencent.tts.model.SpeechSynthesisRequest;
 import com.tencent.tts.model.SpeechSynthesisRequestContent;
 import com.tencent.tts.model.SpeechSynthesisResponse;
+import com.tencent.tts.utils.LineSplitUtils;
 import com.tencent.tts.utils.Ttsutils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
@@ -90,7 +92,8 @@ public class SpeechSynthesizer {
         this.speechSynthesisConfig = speechSynthesisConfig;
         this.speechSynthesisRequest = speechSynthesisRequest;
         this.eventListener = eventListener;
-        sessionParentId = speechSynthesisConfig.getAppId() + "_tts_" + System.currentTimeMillis() + RandomUtil.randomString(4);
+        sessionParentId = speechSynthesisConfig.getAppId() + "_tts_"
+                + System.currentTimeMillis() + RandomUtil.randomString(4);
         index = new AtomicInteger(0);
     }
 
@@ -112,10 +115,46 @@ public class SpeechSynthesizer {
         byte[] audioData = new byte[0];
         response = speechRequest(texts, index.intValue(), sessionParentId);
         //拼接数据
-        if (response != null && response.getSuccess() && response.getAudio() != null && response.getAudio().length > 0) {
+        if (response != null && response.getSuccess()
+                && response.getAudio() != null && response.getAudio().length > 0) {
             audioData = ByteUtils.concat(audioData, response.getAudio());
         }
         response.setSeq(-1);
+        response.setEnd(true);
+        response.setAudio(audioData);
+        //如果请求成功回调成功，否则调用失败
+        if (response.getSuccess()) {
+            eventListener.onComplete(response);
+        } else {
+            eventListener.onFail(response);
+        }
+        index.incrementAndGet();
+        return this;
+    }
+
+    /**
+     * 长文本合成
+     *
+     * @param texts 文本
+     * @return SpeechSynthesizer
+     */
+    public SpeechSynthesizer synthesisLongText(String texts) {
+        //StatService.heartbeat();
+        if (StringUtils.isEmpty(texts)) {
+            ReportService.ifLogMessage(sessionParentId, "text is empty", false);
+            return this;
+        }
+        SpeechSynthesisResponse response = null;
+        byte[] audioData = new byte[0];
+        List<String> longTexts = LineSplitUtils.smartSplit(texts);
+        for (String text : longTexts) {
+            response = speechRequest(text, index.intValue(), sessionParentId);
+            //拼接数据
+            if (response != null && response.getSuccess() && response.getAudio() != null
+                    && response.getAudio().length > 0) {
+                audioData = ByteUtils.concat(audioData, response.getAudio());
+            }
+        }
         response.setEnd(true);
         response.setAudio(audioData);
         //如果请求成功回调成功，否则调用失败
@@ -152,7 +191,8 @@ public class SpeechSynthesizer {
         }
         if (!response.getSuccess()) {
             ReportService.filterRepeatError(speechSynthesisConfig,
-                    sessionParentId, speechSynthesisRequest, response, speechSynthesisConfig.getTtsUrl(), response.getMessage());
+                    sessionParentId, speechSynthesisRequest, response,
+                    speechSynthesisConfig.getTtsUrl(), response.getMessage());
         }
         return response;
     }
@@ -166,13 +206,15 @@ public class SpeechSynthesizer {
      */
     private SpeechSynthesisResponse request(String text, Integer seq, String sessionParentId) {
         String sessionId = sessionParentId + "_" + seq;
-        SpeechSynthesisRequestContent content = SpeechSynthesisRequestContent.builder().text(text).sessionId(sessionId).build();
+        SpeechSynthesisRequestContent content = SpeechSynthesisRequestContent.builder()
+                .text(text).sessionId(sessionId).build();
         SpeechSynthesisResponse synthesizerResponse = new SpeechSynthesisResponse();
         synthesizerResponse.setSeq(seq);
         synthesizerResponse.setSessionId(sessionId);
         synthesizerResponse.setEnd(false);
         //签名
-        TreeMap<String, Object> map = SpeechSynthesisSignService.getParams(speechSynthesisConfig, speechSynthesisRequest, content);
+        TreeMap<String, Object> map = SpeechSynthesisSignService.getParams(speechSynthesisConfig,
+                speechSynthesisRequest, content);
         String url = speechSynthesisSignService.signUrl(speechSynthesisConfig, speechSynthesisRequest, content, map);
         String sign = SignBuilder.createPostSign(url, speechSynthesisConfig.getSecretKey(), speechSynthesisRequest);
 
@@ -210,9 +252,12 @@ public class SpeechSynthesizer {
                         ReportService.ifLogMessage(sessionId, result, true);
 
                         JsonObject jsonObject = new JsonParser().parse(result).getAsJsonObject();
-                        synthesizerResponse.setMessage(jsonObject.getAsJsonObject("Response").getAsJsonObject("Error").getAsJsonPrimitive("Message").getAsString());
-                        synthesizerResponse.setCode(jsonObject.getAsJsonObject("Response").getAsJsonObject("Error").getAsJsonPrimitive("Code").getAsString());
-                        synthesizerResponse.setRequestId(jsonObject.getAsJsonObject("Response").getAsJsonPrimitive("RequestId").getAsString());
+                        synthesizerResponse.setMessage(jsonObject.getAsJsonObject("Response")
+                                .getAsJsonObject("Error").getAsJsonPrimitive("Message").getAsString());
+                        synthesizerResponse.setCode(jsonObject.getAsJsonObject("Response")
+                                .getAsJsonObject("Error").getAsJsonPrimitive("Code").getAsString());
+                        synthesizerResponse.setRequestId(jsonObject.getAsJsonObject("Response")
+                                .getAsJsonPrimitive("RequestId").getAsString());
                     } catch (Exception e) {
                         ReportService.ifLogMessage("request error:", e.getMessage(), true);
                     }

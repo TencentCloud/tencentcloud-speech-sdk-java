@@ -13,17 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.tencent.core.utils;
 
 import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.date.DateUtil;
-import com.tencent.core.service.ReportService;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Date;
 import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 public class Tutils {
 
@@ -33,18 +32,12 @@ public class Tutils {
      * @param executor 线程池
      */
     public static void closeThreadPool(ThreadPoolExecutor executor) {
-        if(executor==null){
-            return;
-        }
-        try {
-            executor.shutdown();
-            if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {
+        if (executor != null) {
+            try {
+                executor.shutdown();
+            } catch (Exception ie) {
                 executor.shutdownNow();
-                if (!executor.awaitTermination(60, TimeUnit.SECONDS))
-                    ReportService.ifLogMessage("close", "The thread pool task did not end normally", true);
             }
-        } catch (InterruptedException ie) {
-            executor.shutdownNow();
         }
     }
 

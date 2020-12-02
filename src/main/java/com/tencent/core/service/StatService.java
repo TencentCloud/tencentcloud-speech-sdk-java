@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.tencent.core.service;
 
 import com.tencent.asr.model.AsrLogInfo;
@@ -128,9 +129,12 @@ public class StatService {
         LogStatistics statistics = JsonUtil.fromJson(JsonUtil.toJson(asrStatistics), LogStatistics.class);
         if (statistics.getReqNum().get() > 0) {
             DecimalFormat df = new DecimalFormat("0.00");
-            statistics.setSuccessRate(Float.parseFloat(df.format((float) statistics.getSuccessNum().get() * 100 / statistics.getReqNum().get())));
-            statistics.setNonBusinessFailNumRate(Float.parseFloat(df.format((float) statistics.getNonBusinessFailNum().get() * 100 / statistics.getReqNum().get())));
-            statistics.setBusinessFailNumRate(Float.parseFloat(df.format((float) statistics.getBusinessFailNum().get() * 100 / statistics.getReqNum().get())));
+            statistics.setSuccessRate(Float.parseFloat(df.format((float) statistics.getSuccessNum().get()
+                    * 100 / statistics.getReqNum().get())));
+            statistics.setNonBusinessFailNumRate(Float.parseFloat(df.format(
+                    (float) statistics.getNonBusinessFailNum().get() * 100 / statistics.getReqNum().get())));
+            statistics.setBusinessFailNumRate(Float.parseFloat(df.format(
+                    (float) statistics.getBusinessFailNum().get() * 100 / statistics.getReqNum().get())));
         }
         if (statistics.getReqNum().get() == 0 && statistics.getSuccessNum().get() == 0) {
             return;

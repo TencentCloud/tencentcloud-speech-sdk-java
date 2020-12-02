@@ -13,14 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.tencent.tts.utils;
 
 public class TempUtils {
 
     public static String bytesToHexStringWithSpace(final byte[] bytes) {
-        if (bytes.length == 0)
+        if (bytes.length == 0) {
             return "";
-
+        }
         final StringBuffer sb = new StringBuffer();
         for (byte b : bytes) {
             sb.append(toHex(b) + " ");
@@ -30,10 +31,11 @@ public class TempUtils {
 
     private static String toHex(final byte b) {
         String hex = Integer.toHexString(unsignedValue(b));
-        if (hex.length() == 2)
+        if (hex.length() == 2) {
             return hex.toUpperCase();
-        else
+        } else {
             return "0" + hex.toUpperCase();
+        }
     }
 
     public static int unsignedValue(final byte b) {

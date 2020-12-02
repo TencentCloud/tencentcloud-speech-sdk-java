@@ -1,3 +1,19 @@
+/*
+ * Copyright (c) 2017-2018 THL A29 Limited, a Tencent company. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.tencent.tts.utils;
 
 import com.tencent.core.service.ReportService;
@@ -73,11 +89,11 @@ public class OpusUtils {
      * 解析opus
      *
      * @param audio audio
-     * @return List<byte[]>
+     * @return List
      */
     public static List<byte[]> readOpusSheet(byte[] audio) {
         byte[] data = ByteUtils.copy(audio);
-        int lengthSum=0;
+        int lengthSum = 0;
         List<byte[]> sheets = new ArrayList<>();
         while (true) {
             // read header
@@ -86,11 +102,12 @@ public class OpusUtils {
             }
             byte[] headBytes = ByteUtils.subBytes(data, 0, 4);
             if (!OpusUtils.verifyHeader(headBytes)) {
-                ReportService.ifLogMessage("readOpus", "Get header values abnormal, not opus but: " + new String(headBytes), false);
+                ReportService.ifLogMessage("readOpus", "Get header values abnormal, not opus but: "
+                        + new String(headBytes), false);
                 break;
             }
             // read seq
-            if(data.length<8){
+            if (data.length < 8) {
                 ReportService.ifLogMessage("readOpus", "Get seq values abnormal, not seq  ", false);
                 return sheets;
             }
@@ -100,7 +117,7 @@ public class OpusUtils {
                 ReportService.ifLogMessage("readOpus", "Get seq abnormal: " + seq, false);
                 break;
             }
-            if(data.length<12){
+            if (data.length < 12) {
                 return sheets;
             }
             // read pkg size
@@ -128,7 +145,7 @@ public class OpusUtils {
             result = ByteUtils.concat(result, lengthBytes);
             result = ByteUtils.concat(result, datas);
             sheets.add(result);
-            lengthSum=lengthSum+length+12;
+            lengthSum = lengthSum + length + 12;
             data = ByteUtils.subBytes(data, 12 + length, data.length - 12 - length);
         }
         return sheets;

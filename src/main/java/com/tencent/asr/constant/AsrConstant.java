@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.tencent.asr.constant;
 
 public class AsrConstant {
@@ -50,12 +51,11 @@ public class AsrConstant {
         /**
          * ws协议 stream
          */
-        //WS_STREAM(2),
+        WS_STREAM(2),
         /**
          * ws协议 byte[]
          */
-        //WS_BYTE(2)
-        ;
+        WS_BYTE(2);
 
         private DataType(int type) {
             this.type = type;
@@ -164,7 +164,7 @@ public class AsrConstant {
         FAIL(-3, "请求失败"),
         NO_SUCCESS(-2, "状态码错误"),
         EXCEPTION(-1, "Runtime异常"),
-        SUCCESS(0,"success"),
+        SUCCESS(0, "success"),
         CODE_100(100, "获取语音分片信息失败"),
         CODE_101(101, "语音分片过大"),
         CODE_102(102, "参数不合法，具体详情参考 message"),
@@ -212,7 +212,7 @@ public class AsrConstant {
         }
 
         public static boolean ifInRetryCode(int code) {
-            Code[] codes = {CODE_110, CODE_121, CODE_123, CODE_124, CODE_126,CODE_113};
+            Code[] codes = {CODE_110, CODE_121, CODE_123, CODE_124, CODE_126, CODE_113, CODE_125};
             for (Code temp : codes) {
                 if (code == temp.getCode()) {
                     return true;

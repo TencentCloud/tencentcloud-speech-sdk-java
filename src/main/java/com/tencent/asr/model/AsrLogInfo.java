@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.tencent.asr.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -36,13 +37,13 @@ public class AsrLogInfo {
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class Log{
+    public static class Log {
         @JsonProperty(value = "Time")
         private String time;
         @JsonProperty(value = "Response")
         private AsrResponse response;
         @JsonProperty(value = "Request")
-        private AsrRequest  request;
+        private AsrRequest request;
         @JsonProperty(value = "Sign")
         private String sign;
         @JsonProperty(value = "Url")
@@ -54,7 +55,7 @@ public class AsrLogInfo {
 
     @Setter
     @Getter
-    public static class AppInfo{
+    public static class AppInfo {
         @JsonProperty(value = "Time")
         private String time;
         @JsonProperty(value = "AppVerName")

@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.tencent.asr.model;
 
 import com.tencent.core.model.TConfig;
@@ -57,8 +58,9 @@ public class AsrConfig extends TConfig {
 
     @Builder
     public AsrConfig(String appId, String secretKey, String secretId,
-                     Long waitTime, String realAsrUrl, String signUrl, String logUrl, String wsUrl,String token) {
-        super(secretId, secretKey, Long.valueOf(appId),token);
+                     Long waitTime, String realAsrUrl, String signUrl,
+                     String logUrl, String wsUrl, String token) {
+        super(secretId, secretKey, Long.valueOf(appId), token);
         this.realAsrUrl = Optional.ofNullable(realAsrUrl).orElse("https://asr.cloud.tencent.com/asr/v1/");
         this.signUrl = Optional.ofNullable(signUrl).orElse("https://asr.cloud.tencent.com/asr/v1/");
         this.logUrl = Optional.ofNullable(logUrl).orElse("https://asr.tencentcloudapi.com/");

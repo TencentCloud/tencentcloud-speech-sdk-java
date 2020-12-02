@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.tencent.tts.utils;
 
 import com.tencent.core.service.ReportService;
@@ -30,12 +31,21 @@ public class Ttsutils {
      * @param sampleRate sampleRate
      * @param response   response
      * @param sessionId  sessionId
+     * @return 文件地址
      */
-    public static void responsePcm2Wav(int sampleRate, byte[] response, String sessionId) {
-        printAndSaveResponse(sampleRate, response, sessionId);
+    public static String responsePcm2Wav(int sampleRate, byte[] response, String sessionId) {
+        return printAndSaveResponse(sampleRate, response, sessionId);
     }
 
-    public static void printAndSaveResponse(int sampleRate, byte[] response, String sessionId) {
+    /**
+     * printAndSaveResponse
+     *
+     * @param sampleRate sampleRate
+     * @param response   response
+     * @param sessionId  sessionId
+     * @return 文件地址
+     */
+    public static String printAndSaveResponse(int sampleRate, byte[] response, String sessionId) {
         if (response != null) {
             new File("logs").mkdirs();
             //获取返回包大小
@@ -49,21 +59,38 @@ public class Ttsutils {
             saveWavFile(wav, wavFile);
             ReportService.ifLogMessage(sessionId, "Response: " + sessionId + ", length: "
                     + response.length + ", result saved at: " + wavFile.getAbsolutePath(), false);
-        } else
+            return wavFile.getAbsolutePath();
+        } else {
             ReportService.ifLogMessage(sessionId, "Result is null.", true);
+            return null;
+        }
     }
 
 
+    /**
+     * 保存结果
+     *
+     * @param response response
+     * @param file     file
+     */
     private static void saveWavFile(byte[] response, File file) {
         try {
             FileOutputStream out = new FileOutputStream(file, false);
             out.write(response);
             out.close();
         } catch (IOException e) {
-            ReportService.ifLogMessage("saveWavFile", "Failed save data to: " + file + ", error: " + e.getMessage(), true);
+            ReportService.ifLogMessage("saveWavFile", "Failed save data to: "
+                    + file + ", error: " + e.getMessage(), true);
         }
     }
 
+    /**
+     * 填充数据
+     *
+     * @param in     in
+     * @param buffer buffer
+     * @return
+     */
     public static int fill(InputStream in, byte[] buffer) throws IOException {
         int length = buffer.length;
         int offset = 0;
@@ -83,6 +110,12 @@ public class Ttsutils {
         }
     }
 
+    /**
+     * 保存数据到file
+     *
+     * @param response response
+     * @param filePath filePath
+     */
     public static void saveResponseToFile(byte[] response, String filePath) {
         try {
             new File(filePath).getParentFile().mkdirs();
@@ -90,7 +123,8 @@ public class Ttsutils {
             out.write(response);
             out.close();
         } catch (IOException e) {
-            ReportService.ifLogMessage("saveResponseToFile", "Failed save data to: " + filePath + ", error: " + e.getMessage(), true);
+            ReportService.ifLogMessage("saveResponseToFile", "Failed save data to: " + filePath
+                    + ", error: " + e.getMessage(), true);
         }
     }
 }

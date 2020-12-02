@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.tencent.core.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -35,7 +36,7 @@ public class ReportInfo {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class Log{
+    public static class Log {
         @JsonProperty(value = "DelayTime")
         private long delayTime;
         @JsonProperty(value = "Time")
@@ -44,24 +45,20 @@ public class ReportInfo {
         private Object response;
         @JsonProperty(value = "Request")
         private Object request;
-        @JsonProperty(value = "Sign")
-        private String sign;
         @JsonProperty(value = "Url")
         private String url;
         @JsonProperty(value = "Stat")
         private LogStatistics stat;
+        @JsonProperty(value = "Sign")
+        private String sign;
     }
 
 
     @Setter
     @Getter
-    public static class AppInfo{
+    public static class AppInfo {
         @JsonProperty(value = "Time")
         private String time;
-        @JsonProperty(value = "AppVerName")
-        private String appVerName;
-        @JsonProperty(value = "AppVerCode")
-        private String appVerCode;
         @JsonProperty(value = "OsVer")
         private String osVer;
         @JsonProperty(value = "OsName")
@@ -72,9 +69,13 @@ public class ReportInfo {
         private String sdkVer;
         @JsonProperty(value = "Exception")
         private String exception;
+        @JsonProperty(value = "AppVerName")
+        private String appVerName;
+        @JsonProperty(value = "AppVerCode")
+        private String appVerCode;
     }
 
-    public static AppInfo getAppInfo(String e,String type){
+    public static AppInfo getAppInfo(String e, String type) {
         AppInfo appInfo = new AppInfo();
         appInfo.setOsVer(System.getProperty("os.version"));
         appInfo.setOsName(System.getProperty("os.name"));

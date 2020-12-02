@@ -13,18 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.tencent.asr.service;
 
+import com.tencent.asr.model.SpeechRecognitionSysConfig;
 import okhttp3.*;
 
+import java.util.concurrent.TimeUnit;
+
 public class WsClientService {
+    static OkHttpClient client = new OkHttpClient.Builder()
+            .writeTimeout(SpeechRecognitionSysConfig.wsWriteTimeOut, TimeUnit.MILLISECONDS)
+            .readTimeout(SpeechRecognitionSysConfig.wsReadTimeOut, TimeUnit.MILLISECONDS)
+            .connectTimeout(SpeechRecognitionSysConfig.wsConnectTimeOut, TimeUnit.MILLISECONDS)
+            .retryOnConnectionFailure(true)
+            .build();
 
-
-    public static WebSocket asrWebSocket(String wsUrl,String sign, WebSocketListener listener) {
+    public static WebSocket asrWebSocket(String wsUrl, String sign, WebSocketListener listener) {
         Headers headers = new Headers.Builder().add("Authorization", sign)
-                .add("Host","asr.cloud.tencent.com").build();
+                .add("Host", "asr.cloud.tencent.com").build();
         Request request = new Request.Builder().url(wsUrl).headers(headers).build();
-        OkHttpClient client = new OkHttpClient.Builder().build();
         WebSocket webSocket = client.newWebSocket(request, listener);
         return webSocket;
     }

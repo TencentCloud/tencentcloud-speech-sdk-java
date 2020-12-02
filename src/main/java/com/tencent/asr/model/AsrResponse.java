@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.tencent.asr.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -67,7 +68,8 @@ public class AsrResponse {
 
     /**
      * 语音分片的信号
-     * 如果请求参数 needvad 为0的话，表示不需要后台做 vad，这里的 seq 就是发送过来的 seq 的序号。如果请求参数 needvad 为1的话，表示需要后台做 vad，vad 会重新分片，送入识别的 seq 会和发送过来的 seq 不一样。
+     * 如果请求参数 needvad 为0的话，表示不需要后台做 vad，这里的 seq 就是发送过来的 seq 的序号。
+     * 如果请求参数 needvad 为1的话，表示需要后台做 vad，vad 会重新分片，送入识别的 seq 会和发送过来的 seq 不一样。
      */
     private int seq;
 
