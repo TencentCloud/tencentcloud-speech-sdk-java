@@ -48,6 +48,7 @@ public class SpeechRecognitionResponseResult {
     /**
      * 这个分片在整个音频流中的结束时间
      */
+    @JsonProperty(value = "end_time")
     private Long endTime;
 
     /**
