@@ -213,6 +213,8 @@ public class SpeechSynthesizer {
         synthesizerResponse.setSessionId(sessionId);
         synthesizerResponse.setEnd(false);
         //签名
+        speechSynthesisRequest.setTimestamp(System.currentTimeMillis() / 1000);
+        speechSynthesisRequest.setExpired(speechSynthesisRequest.getTimestamp() + 86400);
         TreeMap<String, Object> map = SpeechSynthesisSignService.getParams(speechSynthesisConfig,
                 speechSynthesisRequest, content);
         String url = speechSynthesisSignService.signUrl(speechSynthesisConfig, speechSynthesisRequest, content, map);
