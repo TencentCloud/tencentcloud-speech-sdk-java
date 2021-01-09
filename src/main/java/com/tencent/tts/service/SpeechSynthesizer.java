@@ -206,12 +206,12 @@ public class SpeechSynthesizer {
      */
     private SpeechSynthesisResponse request(String text, Integer seq, String sessionParentId) {
         String sessionId = sessionParentId + "_" + seq;
-        SpeechSynthesisRequestContent content = SpeechSynthesisRequestContent.builder()
-                .text(text).sessionId(sessionId).build();
         SpeechSynthesisResponse synthesizerResponse = new SpeechSynthesisResponse();
         synthesizerResponse.setSeq(seq);
         synthesizerResponse.setSessionId(sessionId);
         synthesizerResponse.setEnd(false);
+        SpeechSynthesisRequestContent content = SpeechSynthesisRequestContent.builder()
+                .text(text).sessionId(sessionId).build();
         //签名
         speechSynthesisRequest.setTimestamp(System.currentTimeMillis() / 1000);
         speechSynthesisRequest.setExpired(speechSynthesisRequest.getTimestamp() + 86400);

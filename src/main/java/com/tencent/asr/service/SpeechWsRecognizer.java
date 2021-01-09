@@ -233,7 +233,6 @@ public class SpeechWsRecognizer implements SpeechRecognizer {
                 super.onClosing(webSocket, code, reason);
                 ReportService.ifLogMessage(getId(), "ws onClosing", false);
                 isConnect = false;
-                webSocket.close(1003, "onClosing");
             }
 
             @SneakyThrows

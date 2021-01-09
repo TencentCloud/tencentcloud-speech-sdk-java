@@ -19,6 +19,7 @@ package com.tencent.asr.service;
 import com.tencent.asr.model.AsrConfig;
 import com.tencent.asr.model.AsrRequest;
 import com.tencent.asr.model.AsrRequestContent;
+import com.tencent.asr.model.FlashRecognitionRequest;
 import com.tencent.core.help.SignHelper;
 
 import java.util.Map;
@@ -34,6 +35,28 @@ class SpeechRecognitionSignService {
     public String signWsUrl(AsrConfig asrConfig, AsrRequest request, AsrRequestContent content) {
         String paramUrl = SignHelper.createUrl(getWsParams(asrConfig, request, content));
         return asrConfig.getWsUrl() + asrConfig.getAppId() + paramUrl;
+    }
+
+    public String signFlashUrl(String url, AsrConfig asrConfig, FlashRecognitionRequest request) {
+        String paramUrl = SignHelper.createUrl(getFlashParams(asrConfig, request));
+        return url + asrConfig.getAppId() + paramUrl;
+    }
+
+    /**
+     * 拼装参数 后期如果新增参数，需要在这个方法进行维护，同时需要在{@link FlashRecognitionRequest} 维护对应的参数
+     *
+     * @param asrConfig
+     * @param request
+     * @return
+     */
+    private Map<String, Object> getFlashParams(AsrConfig asrConfig, FlashRecognitionRequest request) {
+        TMap<String, Object> treeMap = getFlashRequestParamMap(asrConfig, request);
+        if (request.getExtendsParam() != null) {
+            for (Map.Entry<String, Object> entry : request.getExtendsParam().entrySet()) {
+                treeMap.put(entry.getKey(), entry.getValue());
+            }
+        }
+        return treeMap;
     }
 
 
@@ -119,6 +142,24 @@ class SpeechRecognitionSignService {
         treeMap.put("convert_num_mode", request.getConvertNumMode());
         treeMap.put("word_info", request.getWordInfo());
         treeMap.put("vad_silence_time", request.getVadSilenceTime());
+        return treeMap;
+    }
+
+    private TMap<String, Object> getFlashRequestParamMap(AsrConfig asrConfig,
+                                                         FlashRecognitionRequest request) {
+        TMap<String, Object> treeMap = new TMap<String, Object>();
+        treeMap.put("secretid", asrConfig.getSecretId());
+        treeMap.put("engine_type", request.getEngineType());
+        treeMap.put("voice_format", request.getVoiceFormat());
+        treeMap.put("timestamp", request.getTimestamp());
+        treeMap.put("speaker_diarization", request.getSpeakerDiarization());
+        treeMap.put("filter_dirty", request.getFilterDirty());
+        treeMap.put("filter_modal", request.getFilterModal());
+        treeMap.put("filter_punc", request.getFilterPunc());
+        treeMap.put("convert_num_mode", request.getConvertNumMode());
+        treeMap.put("word_info", request.getWordInfo());
+        treeMap.put("first_channel_only", request.getFirstChannelOnly());
+        treeMap.put("hotword_id", request.getHotWordId());
         return treeMap;
     }
 }

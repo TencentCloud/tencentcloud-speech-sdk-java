@@ -57,10 +57,17 @@ public class SpeechRecognitionSysConfig {
      */
     public static int socketTimeout = 120000;
 
+
+
     /**
      * 连接超时时间
      */
     public static int connectTimeout = 1000;
+
+
+    public static int flashSocketTimeout = 600000;
+    public static int flashConnectTimeout = 60000;
+    public static int flashConnectionRequestTimeout = 60000;
 
     /**
      * 连接池获取连接超时时间

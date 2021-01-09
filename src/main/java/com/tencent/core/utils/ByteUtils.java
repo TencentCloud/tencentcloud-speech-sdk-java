@@ -87,7 +87,7 @@ public class ByteUtils {
 
     /**
      * 使用流的方式将文件读取一遍，然后切分成小的数组返回，数组大小为一个固定的值。
-     * <p>
+     *
      * 切分大文件时会比{@link com.tencent.core.utils.ByteUtils#subToSmallBytes(byte[], int, int)}方法快一点。
      *
      * @param file   文件

@@ -37,7 +37,7 @@ public class BytesReader {
 
     /**
      * 获取一个unsigned 4-byte的整数，结果以long表示，取值范围为0~4294967295
-     * <p>
+     *
      * 如果参数为null或长度不为4则返回0.
      *
      * @param bytes 字节数据

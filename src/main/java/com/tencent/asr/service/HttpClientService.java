@@ -26,7 +26,6 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.concurrent.FutureCallback;
-import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -247,13 +246,16 @@ public class HttpClientService {
      * @return CloseableHttpClient
      */
     private CloseableHttpClient createSyncHttpClient() {
-        HttpClientConnectionManager manager = new PoolingHttpClientConnectionManager();
+        PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
+        cm.setMaxTotal(SpeechRecognitionSysConfig.MaxTotal);
+        cm.setDefaultMaxPerRoute(SpeechRecognitionSysConfig.defaultMaxPerRoute);
+
         RequestConfig requestConfig = RequestConfig.custom()
                 .setConnectTimeout(SpeechRecognitionSysConfig.connectTimeout)
                 .setSocketTimeout(SpeechRecognitionSysConfig.socketTimeout)
                 .setConnectionRequestTimeout(SpeechRecognitionSysConfig.connectionRequestTimeout)
                 .build();
-        return HttpClients.custom().setConnectionManager(manager)
+        return HttpClients.custom().setConnectionManager(cm)
                 .setDefaultRequestConfig(requestConfig).build();
     }
 }

@@ -29,7 +29,7 @@ import java.util.Set;
 
 /**
  * 特定的签名构建工具类。按照腾讯云只能语音服务的接口鉴权要求，对传入的URL创建签名，用于URL请求鉴权。
- * <p>
+ *
  * 签名方法详见： <a href="https://cloud.tencent.com/document/product/441/17366">接口鉴权</a>
  */
 public class SignBuilder {
@@ -107,7 +107,7 @@ public class SignBuilder {
 
     /**
      * 出现鉴权失败时，可尝试调用本方法，创建签名并做一次URL encode操作。
-     * <p>
+     *
      * 详细说明请查看 <a href="https://cloud.tencent.com/document/product/441/17366">接口鉴权</a> 中的第 3点：签名串编码
      *
      * @param serverUrl   请求URL

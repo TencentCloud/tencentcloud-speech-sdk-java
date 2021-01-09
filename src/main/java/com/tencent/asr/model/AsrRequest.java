@@ -162,7 +162,6 @@ public class AsrRequest extends TRequest {
         AsrRequest request = new AsrRequest();
         request.projectId = 1013976;
         request.subServiceType = 1;
-        request.engineModelType = "8k_0";
         request.resultTextFormat = AsrConstant.ResponseEncode.UTF_8.getId();
         request.resType = AsrConstant.ReturnType.REALTIME_FOLLOW.getTypeId();
         request.voiceFormat = AsrConstant.VoiceFormat.wav.getFormatId();

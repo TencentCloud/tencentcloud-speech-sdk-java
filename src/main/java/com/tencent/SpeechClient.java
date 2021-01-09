@@ -20,12 +20,10 @@ import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.RandomUtil;
 import com.tencent.asr.constant.AsrConstant;
 import com.tencent.asr.model.AsrConfig;
+import com.tencent.asr.model.Credential;
 import com.tencent.asr.model.SpeechRecognitionRequest;
 import com.tencent.asr.model.SpeechRecognitionSysConfig;
-import com.tencent.asr.service.SpeechHttpRecognizer;
-import com.tencent.asr.service.SpeechRecognitionListener;
-import com.tencent.asr.service.SpeechRecognizer;
-import com.tencent.asr.service.SpeechWsRecognizer;
+import com.tencent.asr.service.*;
 import com.tencent.core.model.GlobalConfig;
 import com.tencent.core.service.StatService;
 import com.tencent.tts.model.SpeechSynthesisConfig;
@@ -156,5 +154,21 @@ public class SpeechClient {
         }
         return new SpeechWsRecognizer(RandomUtil.randomString(8),
                 config, request, speechRecognitionListener);
+    }
+
+
+    /**
+     * newSpeechFlashRecognizer
+     *
+     * @return SpeechRecognizer
+     */
+    public static FlashRecognizer newFlashRecognizer(String appId, Credential credential) {
+        AsrConfig config = AsrConfig.builder()
+                .appId(appId)
+                .secretId(credential.getSecretId())
+                .secretKey(credential.getSecretKey())
+                .token(credential.getToken())
+                .build();
+        return new FlashRecognizer(config);
     }
 }

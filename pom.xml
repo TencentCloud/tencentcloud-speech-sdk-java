@@ -6,7 +6,7 @@
 
     <groupId>com.tencentcloudapi</groupId>
     <artifactId>tencentcloud-speech-sdk-java</artifactId>
-    <version>1.0.11</version>
+    <version>1.0.12</version>
     <name>tencentcloud-speech-sdk-java</name>
     <packaging>jar</packaging>
     <description>Tencent Cloud ASR and TTS  SDK for Java </description>
@@ -70,7 +70,7 @@
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
-            <version>4.5.2</version>
+            <version>4.5.13</version>
         </dependency>
 
         <dependency>
@@ -126,12 +126,7 @@
         </license>
     </licenses>
 
-    <developers>
-        <developer>
-            <name></name>
-            <email></email>
-        </developer>
-    </developers>
+
 
     <scm>
         <connection>scm:git:https://github.com/TencentCloud/tencentcloud-speech-sdk-java.git</connection>

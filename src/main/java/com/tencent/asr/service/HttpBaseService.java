@@ -532,7 +532,7 @@ public class HttpBaseService {
      */
     private AsrRequest checkAsrRequest(AsrRequest request) {
         if (request.getEngineModelType() == null) {
-            request.setEngineModelType("8k_0");
+            throw new RuntimeException("please set engine_type");
         }
         if (request.getCutLength() == null) {
             resetCutLength(request);
@@ -714,7 +714,7 @@ public class HttpBaseService {
             sendExpireTime = System.currentTimeMillis() + asrConfig.getWaitTime() / 2;
             return;
         }
-        if (sendData.length > asrRequest.getCutLength()) {
+        if (sendData.length >= asrRequest.getCutLength()) {
             int posi = 0;
             while (sendData.length - posi >= asrRequest.getCutLength()) {
                 send(ByteUtils.subBytes(sendData, posi, asrRequest.getCutLength()), false);

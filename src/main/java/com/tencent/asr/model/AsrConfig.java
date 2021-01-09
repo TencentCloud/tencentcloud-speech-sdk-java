@@ -55,6 +55,11 @@ public class AsrConfig extends TConfig {
      */
     private String wsUrl;
 
+    /**
+     * 极速版地址
+     */
+    private String flashUrl;
+
 
     @Builder
     public AsrConfig(String appId, String secretKey, String secretId,
@@ -65,6 +70,7 @@ public class AsrConfig extends TConfig {
         this.signUrl = Optional.ofNullable(signUrl).orElse("https://asr.cloud.tencent.com/asr/v1/");
         this.logUrl = Optional.ofNullable(logUrl).orElse("https://asr.tencentcloudapi.com/");
         this.wsUrl = Optional.ofNullable(wsUrl).orElse("wss://asr.cloud.tencent.com/asr/v2/");
+        this.flashUrl = Optional.ofNullable(flashUrl).orElse("https://asr.cloud.tencent.com/asr/flash/v1/");
         this.waitTime = Optional.ofNullable(waitTime).orElse(6 * 1000L);
     }
 }
