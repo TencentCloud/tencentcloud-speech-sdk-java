@@ -53,8 +53,10 @@ public class ReportService {
     public static void report(Boolean success, String code, TConfig config, String id, Object request,
                               Object response, String url, final String e, long delayTime) {
         try {
-            StatService.statAsr(success, code, delayTime);
-            StatService.heartbeat();
+            if (GlobalConfig.ifOpenStat) {
+                StatService.statAsr(success, code, delayTime);
+                StatService.heartbeat();
+            }
             if (!success) {
                 filterRepeatError(config, id, request, response, url, e, delayTime);
             }

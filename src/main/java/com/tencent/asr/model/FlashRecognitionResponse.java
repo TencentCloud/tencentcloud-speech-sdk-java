@@ -61,10 +61,10 @@ public class FlashRecognitionResponse {
     public static class FlashRecognitionSentence {
         @JsonProperty("text")
         private String text;
-        @JsonProperty("start_ms")
-        private Long startMs;
-        @JsonProperty("end_ms")
-        private Long endMs;
+        @JsonProperty("start_time")
+        private Long startTime;
+        @JsonProperty("end_time")
+        private Long endTime;
         @JsonProperty("speaker_id")
         private Integer speakerId;
         @JsonProperty("word_list")

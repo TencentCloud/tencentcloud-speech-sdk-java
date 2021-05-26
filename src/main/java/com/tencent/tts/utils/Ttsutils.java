@@ -89,7 +89,7 @@ public class Ttsutils {
      *
      * @param in     in
      * @param buffer buffer
-     * @return
+     * @return offset
      */
     public static int fill(InputStream in, byte[] buffer) throws IOException {
         int length = buffer.length;

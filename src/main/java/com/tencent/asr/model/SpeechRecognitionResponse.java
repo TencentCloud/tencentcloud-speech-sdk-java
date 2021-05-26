@@ -41,6 +41,7 @@ public class SpeechRecognitionResponse {
     /**
      * voiceId
      */
+    @JsonProperty("voice_id")
     private String voiceId;
 
     /**

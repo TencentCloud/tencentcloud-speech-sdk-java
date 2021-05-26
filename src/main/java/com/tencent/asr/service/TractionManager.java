@@ -16,6 +16,7 @@
 
 package com.tencent.asr.service;
 
+import com.tencent.core.model.GlobalConfig;
 import com.tencent.core.service.ReportService;
 import com.tencent.core.service.StatService;
 
@@ -31,8 +32,10 @@ public class TractionManager {
     }
 
     public void beginTraction(String streamId) {
-        StatService.getAsrStatistics().getStreamNum().incrementAndGet();
-        StatService.getAsrStatistics().getVoiceIdNum().incrementAndGet();
+        if (GlobalConfig.ifOpenStat) {
+            StatService.getAsrStatistics().getStreamNum().incrementAndGet();
+            StatService.getAsrStatistics().getVoiceIdNum().incrementAndGet();
+        }
         ReportService.ifLogMessage(streamId, "Open transaction:" + streamId, false);
     }
 

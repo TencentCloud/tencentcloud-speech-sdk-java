@@ -17,10 +17,10 @@
 <dependency>
     <groupId>com.tencentcloudapi</groupId>
     <artifactId>tencentcloud-speech-sdk-java</artifactId>
-    <version>1.0.13</version>
+    <version>1.0.14</version>
 </dependency>
 ```
 
 ## 示例
-参见[example](https://github.com/TencentCloud/tencentcloud-speech-sdk-java-example/tree/main/src/main/java/com/tencentcloud)
+参见[example](https://github.com/TencentCloud/tencentcloud-speech-sdk-java-example)
 

@@ -23,6 +23,7 @@ import com.tencent.asr.model.AsrRequest;
 import com.tencent.asr.model.AsrResponse;
 import com.tencent.core.handler.BaseEventListener;
 import com.tencent.core.handler.RealTimeEventListener;
+import com.tencent.core.model.GlobalConfig;
 import com.tencent.core.service.ReportService;
 import com.tencent.core.service.StatService;
 import com.tencent.core.service.TCall;
@@ -84,9 +85,11 @@ public class AsrClient implements TClient {
      */
     @Override
     public void start() {
-        StatService.setConfig(asrConfig.getSecretId(), asrConfig.getSecretKey(),
-                String.valueOf(asrConfig.getAppId()), null);
-        StatService.startReportStat();
+        if (GlobalConfig.ifOpenStat) {
+            StatService.setConfig(asrConfig.getSecretId(), asrConfig.getSecretKey(),
+                    String.valueOf(asrConfig.getAppId()), null);
+            StatService.startReportStat();
+        }
     }
 
     /**

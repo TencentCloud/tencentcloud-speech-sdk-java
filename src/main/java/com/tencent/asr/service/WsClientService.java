@@ -18,6 +18,7 @@ package com.tencent.asr.service;
 
 import com.tencent.asr.model.SpeechRecognitionSysConfig;
 import okhttp3.*;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.concurrent.TimeUnit;
 
@@ -29,9 +30,13 @@ public class WsClientService {
             .retryOnConnectionFailure(true)
             .build();
 
-    public static WebSocket asrWebSocket(String wsUrl, String sign, WebSocketListener listener) {
-        Headers headers = new Headers.Builder().add("Authorization", sign)
-                .add("Host", "asr.cloud.tencent.com").build();
+    public static WebSocket asrWebSocket(String token, String wsUrl, String sign, WebSocketListener listener) {
+        Headers.Builder builder = new Headers.Builder().add("Authorization", sign)
+                .add("Host", "asr.cloud.tencent.com");
+        if (StringUtils.isNotEmpty(token)) {
+            builder.add("X-TC-Token", token);
+        }
+        Headers headers = builder.build();
         Request request = new Request.Builder().url(wsUrl).headers(headers).build();
         WebSocket webSocket = client.newWebSocket(request, listener);
         return webSocket;

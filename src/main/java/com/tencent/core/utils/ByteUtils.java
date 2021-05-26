@@ -103,7 +103,7 @@ public class ByteUtils {
      *
      * @param inputStream inputStream
      * @param subLen      subLen
-     * @return
+     * @return list
      */
     public static List<byte[]> subToSmallBytes(InputStream inputStream, int subLen) {
         List<byte[]> list = new ArrayList<byte[]>();

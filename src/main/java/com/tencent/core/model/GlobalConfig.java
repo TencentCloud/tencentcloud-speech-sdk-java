@@ -50,7 +50,7 @@ public class GlobalConfig {
 
     public static String region = "ap-shanghai";
 
-    public static Boolean ifOpenStat = true;
+    public static Boolean ifOpenStat = false;
 
     public static Boolean ifSpeechClient = true;
 }

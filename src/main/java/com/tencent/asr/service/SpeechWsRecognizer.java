@@ -238,14 +238,10 @@ public class SpeechWsRecognizer implements SpeechRecognizer {
             @SneakyThrows
             @Override
             public void onFailure(WebSocket webSocket, Throwable t, Response response) {
-                super.onFailure(webSocket, t, response);
                 isConnect = false;
                 if (t.getMessage() != null && !t.getMessage().equals("Socket closed")) {
                     ReportService.ifLogMessage(getId(), "onFailure:reconnect,"
                             + t.getMessage() + t.getLocalizedMessage(), true);
-                    //连接中断则重新连接
-                    reconnect(new byte[0]);
-                    return;
                 }
                 if (response != null) {
                     ReportService.ifLogMessage(getId(), "onFailure:" + response.message() + "_"
@@ -268,7 +264,7 @@ public class SpeechWsRecognizer implements SpeechRecognizer {
                 super.onMessage(webSocket, text);
                 ReportService.ifLogMessage(getId(), "onMessage:" + text, false);
                 SpeechRecognitionResponse response = JsonUtil.fromJson(text, SpeechRecognitionResponse.class);
-                if (listener != null) {
+                if (listener != null && response != null) {
                     if (response.getCode() == 0) {
                         //回调
                         resultCallBack(response);
@@ -391,7 +387,7 @@ public class SpeechWsRecognizer implements SpeechRecognizer {
                     String url = speechRecognitionSignService.signWsUrl(asrConfig, asrRequest, asrRequestContent);
                     String sign = SignBuilder.createGetSign(url, asrConfig.getSecretKey(), asrRequest);
                     WebSocketListener webSocketListener = createWebSocketListener();
-                    webSocket = WsClientService.asrWebSocket(url, sign, webSocketListener);
+                    webSocket = WsClientService.asrWebSocket(asrConfig.getToken(),url, sign, webSocketListener);
                     isConnect = true;
                 }
             } finally {
