@@ -57,7 +57,7 @@ public class ReportService {
                 StatService.statAsr(success, code, delayTime);
                 StatService.heartbeat();
             }
-            if (!success) {
+            if (GlobalConfig.ifOpenStat&&!success) {
                 filterRepeatError(config, id, request, response, url, e, delayTime);
             }
         } catch (Exception exception) {

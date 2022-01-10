@@ -116,12 +116,12 @@ public class SpeechWsRecognizer implements SpeechRecognizer {
     /**
      * 初始化参数
      *
-     * @param config   配置
-     * @param request  请求参数
+     * @param config 配置
+     * @param request 请求参数
      * @param listener 回调
      */
     public SpeechWsRecognizer(String streamId, AsrConfig config,
-                              SpeechRecognitionRequest request, SpeechRecognitionListener listener) {
+            SpeechRecognitionRequest request, SpeechRecognitionListener listener) {
         this.asrConfig = config;
         this.asrRequest = request;
         //这里使用到voiceId
@@ -265,6 +265,7 @@ public class SpeechWsRecognizer implements SpeechRecognizer {
                 ReportService.ifLogMessage(getId(), "onMessage:" + text, false);
                 SpeechRecognitionResponse response = JsonUtil.fromJson(text, SpeechRecognitionResponse.class);
                 if (listener != null && response != null) {
+                    listener.onMessage(response);
                     if (response.getCode() == 0) {
                         //回调
                         resultCallBack(response);
@@ -313,7 +314,7 @@ public class SpeechWsRecognizer implements SpeechRecognizer {
         if (response.getFinalSpeech() == null) {
             response.setFinalSpeech(0);
         }
-        if (response.getResult() != null) {
+        if (response.getResult() != null && listener != null) {
             if (response.getResult().getSliceType() == 0) {
                 begin = true;
                 listener.onSentenceBegin(response);
@@ -330,6 +331,7 @@ public class SpeechWsRecognizer implements SpeechRecognizer {
             } else {
                 listener.onRecognitionResultChange(response);
             }
+
         }
 
         //如果final=1处理尾包
@@ -387,7 +389,7 @@ public class SpeechWsRecognizer implements SpeechRecognizer {
                     String url = speechRecognitionSignService.signWsUrl(asrConfig, asrRequest, asrRequestContent);
                     String sign = SignBuilder.createGetSign(url, asrConfig.getSecretKey(), asrRequest);
                     WebSocketListener webSocketListener = createWebSocketListener();
-                    webSocket = WsClientService.asrWebSocket(asrConfig.getToken(),url, sign, webSocketListener);
+                    webSocket = WsClientService.asrWebSocket(asrConfig.getToken(), url, sign, webSocketListener);
                     isConnect = true;
                 }
             } finally {

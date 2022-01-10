@@ -24,12 +24,17 @@ import java.util.concurrent.TimeUnit;
 
 public class WsClientService {
     static OkHttpClient client = new OkHttpClient.Builder()
+            .connectionPool(new ConnectionPool(SpeechRecognitionSysConfig.wsMaxIdleConnections,
+                    SpeechRecognitionSysConfig.wsKeepAliveDuration, TimeUnit.MILLISECONDS))
             .writeTimeout(SpeechRecognitionSysConfig.wsWriteTimeOut, TimeUnit.MILLISECONDS)
             .readTimeout(SpeechRecognitionSysConfig.wsReadTimeOut, TimeUnit.MILLISECONDS)
             .connectTimeout(SpeechRecognitionSysConfig.wsConnectTimeOut, TimeUnit.MILLISECONDS)
             .retryOnConnectionFailure(true)
             .build();
-
+    static {
+        client.dispatcher().setMaxRequests(SpeechRecognitionSysConfig.wsMaxRequests);
+        client.dispatcher().setMaxRequestsPerHost(SpeechRecognitionSysConfig.wsMaxRequestsPerHost);
+    }
     public static WebSocket asrWebSocket(String token, String wsUrl, String sign, WebSocketListener listener) {
         Headers.Builder builder = new Headers.Builder().add("Authorization", sign)
                 .add("Host", "asr.cloud.tencent.com");

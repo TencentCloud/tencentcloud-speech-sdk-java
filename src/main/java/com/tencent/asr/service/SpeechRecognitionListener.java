@@ -62,4 +62,11 @@ public abstract class SpeechRecognitionListener {
      */
     public abstract void onFail(SpeechRecognitionResponse response);
 
+    /**
+     * 响应结果（包含稳态和非稳态）
+     *
+     * @param response 识别结果
+     */
+    public abstract void onMessage(SpeechRecognitionResponse response);
+
 }

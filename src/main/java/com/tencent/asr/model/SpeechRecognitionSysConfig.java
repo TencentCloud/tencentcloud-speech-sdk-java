@@ -58,7 +58,6 @@ public class SpeechRecognitionSysConfig {
     public static int socketTimeout = 120000;
 
 
-
     /**
      * 连接超时时间
      */
@@ -98,4 +97,25 @@ public class SpeechRecognitionSysConfig {
      * wsConnectTimeOut
      */
     public static int wsConnectTimeOut = 60000;
+
+    /**
+     * 连接池大小，指单个okhttpclient实例所有连接的连接池。
+     * 默认：600，值的设置与业务请求量有关，如果请求三方的tps是200，建议这个值设置在200左右。
+     */
+    public static int wsMaxIdleConnections = 600;
+
+    /**
+     * 连接池中连接的最大时长 默认5分钟，依据业务场景来确定有效时间，如果不确定，那就保持5分钟
+     */
+    public static int wsKeepAliveDuration = 300000;
+
+    /**
+     * 当前okhttpclient实例最大的并发请求数
+     */
+    public static int wsMaxRequests = 500;
+
+    /**
+     * 单个主机最大请求并发数，这里的主机指被请求方主机，一般可以理解对调用方有限流作用。注意：websocket请求不受这个限制。
+     */
+    public static int wsMaxRequestsPerHost = 5;
 }
