@@ -16,26 +16,66 @@
 
 package com.tencent.asr.service;
 
-import com.tencent.asr.model.SpeechRecognitionSysConfig;
-import okhttp3.*;
+import com.tencent.asr.model.SpeechWebsocketConfig;
+import com.tencent.core.model.GlobalConfig;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import okhttp3.ConnectionPool;
+import okhttp3.Dispatcher;
+import okhttp3.Headers;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.WebSocket;
+import okhttp3.WebSocketListener;
+import okhttp3.internal.Util;
+import okhttp3.logging.HttpLoggingInterceptor;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.concurrent.TimeUnit;
-
 public class WsClientService {
-    static OkHttpClient client = new OkHttpClient.Builder()
-            .connectionPool(new ConnectionPool(SpeechRecognitionSysConfig.wsMaxIdleConnections,
-                    SpeechRecognitionSysConfig.wsKeepAliveDuration, TimeUnit.MILLISECONDS))
-            .writeTimeout(SpeechRecognitionSysConfig.wsWriteTimeOut, TimeUnit.MILLISECONDS)
-            .readTimeout(SpeechRecognitionSysConfig.wsReadTimeOut, TimeUnit.MILLISECONDS)
-            .connectTimeout(SpeechRecognitionSysConfig.wsConnectTimeOut, TimeUnit.MILLISECONDS)
-            .retryOnConnectionFailure(true)
-            .build();
-    static {
-        client.dispatcher().setMaxRequests(SpeechRecognitionSysConfig.wsMaxRequests);
-        client.dispatcher().setMaxRequestsPerHost(SpeechRecognitionSysConfig.wsMaxRequestsPerHost);
+
+    protected OkHttpClient client;
+
+    /**
+     * @param config okhttp client config
+     */
+    public WsClientService(SpeechWebsocketConfig config) {
+        ExecutorService treadPool = config.getExecutorService();
+        if (config.getExecutorService() == null) {
+            treadPool = new ThreadPoolExecutor(config.getWsMaxRequests(),
+                    Integer.MAX_VALUE, 60, TimeUnit.SECONDS,
+                    new SynchronousQueue<Runnable>(), Util.threadFactory("OkHttp Dispatcher", false));
+        }
+        if (GlobalConfig.ifLog) {
+            HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
+            loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+            client = new OkHttpClient.Builder()
+                    .dispatcher(new Dispatcher(treadPool))
+                    .connectionPool(new ConnectionPool(config.getWsMaxIdleConnections(),
+                            config.getWsKeepAliveDuration(), TimeUnit.MILLISECONDS))
+                    .writeTimeout(config.getWsWriteTimeOut(), TimeUnit.MILLISECONDS)
+                    .readTimeout(config.getWsReadTimeOut(), TimeUnit.MILLISECONDS)
+                    .connectTimeout(config.getWsConnectTimeOut(), TimeUnit.MILLISECONDS)
+                    .retryOnConnectionFailure(true)
+                    .addInterceptor(loggingInterceptor)
+                    .build();
+        } else {
+            client = new OkHttpClient.Builder()
+                    .dispatcher(new Dispatcher(treadPool))
+                    .connectionPool(new ConnectionPool(config.getWsMaxIdleConnections(),
+                            config.getWsKeepAliveDuration(), TimeUnit.MILLISECONDS))
+                    .writeTimeout(config.getWsWriteTimeOut(), TimeUnit.MILLISECONDS)
+                    .readTimeout(config.getWsReadTimeOut(), TimeUnit.MILLISECONDS)
+                    .connectTimeout(config.getWsConnectTimeOut(), TimeUnit.MILLISECONDS)
+                    .retryOnConnectionFailure(true)
+                    .build();
+        }
+        client.dispatcher().setMaxRequests(config.getWsMaxRequests());
+        client.dispatcher().setMaxRequestsPerHost(config.getWsMaxRequestsPerHost());
     }
-    public static WebSocket asrWebSocket(String token, String wsUrl, String sign, WebSocketListener listener) {
+
+    public WebSocket asrWebSocket(String token, String wsUrl, String sign, WebSocketListener listener) {
         Headers.Builder builder = new Headers.Builder().add("Authorization", sign)
                 .add("Host", "asr.cloud.tencent.com");
         if (StringUtils.isNotEmpty(token)) {

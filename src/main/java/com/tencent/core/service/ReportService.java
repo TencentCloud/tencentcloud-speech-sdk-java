@@ -25,14 +25,11 @@ import com.tencent.core.utils.Tutils;
 import com.tencentcloudapi.asr.v20190614.AsrClient;
 import com.tencentcloudapi.common.Credential;
 import com.tencentcloudapi.common.exception.TencentCloudSDKException;
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import net.jodah.expiringmap.ExpirationPolicy;
 import net.jodah.expiringmap.ExpiringMap;
 import org.apache.commons.lang3.StringUtils;
-
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 
 public class ReportService {
 
@@ -46,18 +43,18 @@ public class ReportService {
 
 
     public static void report(Boolean success, String code, TConfig config, String id, Object request,
-                              Object response, String url, final String e) {
+            Object response, String url, final String e) {
         report(success, code, config, id, request, response, url, e, 0);
     }
 
     public static void report(Boolean success, String code, TConfig config, String id, Object request,
-                              Object response, String url, final String e, long delayTime) {
+            Object response, String url, final String e, long delayTime) {
         try {
             if (GlobalConfig.ifOpenStat) {
                 StatService.statAsr(success, code, delayTime);
                 StatService.heartbeat();
             }
-            if (GlobalConfig.ifOpenStat&&!success) {
+            if (GlobalConfig.ifOpenReportError && !success) {
                 filterRepeatError(config, id, request, response, url, e, delayTime);
             }
         } catch (Exception exception) {
@@ -68,15 +65,15 @@ public class ReportService {
     /**
      * 过滤重复的错误，避免请求过多
      *
-     * @param config   TConfig
-     * @param id       id
-     * @param request  request
+     * @param config TConfig
+     * @param id id
+     * @param request request
      * @param response response
-     * @param url      url
-     * @param e        错误
+     * @param url url
+     * @param e 错误
      */
     public static void filterRepeatError(TConfig config, String id, Object request,
-                                         Object response, String url, final String e, final long delayTime) {
+            Object response, String url, final String e, final long delayTime) {
         //保证线程安全
         synchronized (ReportService.class) {
             if (errorMap.containsKey(id)) {
@@ -94,7 +91,7 @@ public class ReportService {
     }
 
     public static void filterRepeatError(TConfig config, String id, Object request,
-                                         Object response, String url, final String e) {
+            Object response, String url, final String e) {
         filterRepeatError(config, id, request, response, url, e, 0);
     }
 
@@ -102,15 +99,15 @@ public class ReportService {
     /**
      * 上报错误
      *
-     * @param config   TConfig
-     * @param id       id
-     * @param request  request
+     * @param config TConfig
+     * @param id id
+     * @param request request
      * @param response response
-     * @param url      url
-     * @param e        错误
+     * @param url url
+     * @param e 错误
      */
     public static void reportError(TConfig config, String id, Object request,
-                                   Object response, String url, String e, long delayTime) {
+            Object response, String url, String e, long delayTime) {
         ReportInfo reportInfo = new ReportInfo();
         ReportInfo.Log log = ReportInfo.Log.builder().request(request).url(url).delayTime(delayTime)
                 .response(response).time(Tutils.getNowData()).build();
@@ -124,10 +121,10 @@ public class ReportService {
     /**
      * 错误上报
      *
-     * @param secretId  secretId
+     * @param secretId secretId
      * @param secretKey secretKey
-     * @param id        标志
-     * @param data      上报数据
+     * @param id 标志
+     * @param data 上报数据
      */
     public static void doReportError(String secretId, String secretKey, String token, String id, Object data) {
         try {
@@ -150,18 +147,17 @@ public class ReportService {
     /**
      * 打印日志
      *
-     * @param id      日志标示
+     * @param id 日志标示
      * @param message 日志信息
-     * @param error   是否异常日志
+     * @param error 是否异常日志
      */
     public static void ifLogMessage(String id, String message, Boolean error) {
         if (GlobalConfig.ifLog) {
             id = Optional.ofNullable(id).orElse("");
-            String date = LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME);
             if (error) {
-                System.out.println(date + " [ERROR " + id + "]" + message);
+                GlobalConfig.sdkLogInterceptor.error(id + "||" + message);
             } else {
-                System.out.println(date + " [INFO " + id + "]" + message);
+                GlobalConfig.sdkLogInterceptor.info(id + "||" + message);
             }
         }
     }

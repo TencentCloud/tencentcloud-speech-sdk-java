@@ -118,4 +118,9 @@ public class SpeechRecognitionSysConfig {
      * 单个主机最大请求并发数，这里的主机指被请求方主机，一般可以理解对调用方有限流作用。注意：websocket请求不受这个限制。
      */
     public static int wsMaxRequestsPerHost = 5;
+
+    /**
+     * 创建wsclient 最大等待时间 默认5min
+     */
+    public static int wsStartMethodWait = 300;
 }

@@ -18,20 +18,27 @@ package com.tencent.asr.service;
 
 import cn.hutool.core.map.MapUtil;
 import com.tencent.asr.constant.AsrConstant;
-import com.tencent.asr.model.*;
+import com.tencent.asr.model.AsrConfig;
+import com.tencent.asr.model.AsrRequestContent;
+import com.tencent.asr.model.SpeechRecognitionRequest;
+import com.tencent.asr.model.SpeechRecognitionResponse;
+import com.tencent.asr.model.SpeechRecognitionSysConfig;
 import com.tencent.asr.utils.AsrUtils;
 import com.tencent.core.service.ReportService;
 import com.tencent.core.utils.JsonUtil;
 import com.tencent.core.utils.SignBuilder;
+import com.tencent.core.utils.Tutils;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.ReentrantLock;
 import lombok.SneakyThrows;
 import okhttp3.Response;
 import okhttp3.WebSocket;
 import okhttp3.WebSocketListener;
 import okio.ByteString;
-
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.locks.ReentrantLock;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * websocket asr
@@ -98,7 +105,15 @@ public class SpeechWsRecognizer implements SpeechRecognizer {
      */
     private ReentrantLock lock = new ReentrantLock();
 
+    /**
+     * start 方法等待
+     */
+    private final CountDownLatch startLatch = new CountDownLatch(1);
 
+    /**
+     * stop 方法等待
+     */
+    private final CountDownLatch closeLatch = new CountDownLatch(1);
     /**
      * 一句话是否开始
      */
@@ -114,43 +129,88 @@ public class SpeechWsRecognizer implements SpeechRecognizer {
     private TractionManager tractionManager;
 
     /**
+     * WsClientService
+     */
+    private WsClientService wsClientService;
+
+    /**
      * 初始化参数
      *
      * @param config 配置
      * @param request 请求参数
      * @param listener 回调
      */
-    public SpeechWsRecognizer(String streamId, AsrConfig config,
+    public SpeechWsRecognizer(WsClientService wsClientService,
+            String streamId, AsrConfig config,
             SpeechRecognitionRequest request, SpeechRecognitionListener listener) {
+        this.wsClientService = wsClientService;
         this.asrConfig = config;
         this.asrRequest = request;
         //这里使用到voiceId
+        if (StringUtils.isEmpty(request.getVoiceId())) {
+            request.setVoiceId(AsrUtils.getVoiceId(config.getAppId()));
+        }
         this.asrRequestContent = AsrRequestContent.builder()
                 .seq(0).end(0).streamId(streamId)
-                .voiceId(AsrUtils.getVoiceId(config.getAppId())).build();
+                .voiceId(request.getVoiceId()).build();
         this.listener = listener;
         this.tractionManager = new TractionManager(config.getAppId());
+    }
+
+    /**
+     * 创建websocket
+     */
+    private Boolean createWebsocket() throws SdkRunException {
+        if (!isConnect || webSocket == null) {
+            //如果没有连接则创建连接
+            try {
+                lock.lock();
+                if (!isConnect || webSocket == null) {
+                    ReportService.ifLogMessage(getId(), "create websocket", false);
+                    asrRequest.setTimestamp(System.currentTimeMillis() / 1000);
+                    asrRequest.setExpired(System.currentTimeMillis() / 1000 + 86400);
+                    String url = speechRecognitionSignService.signWsUrl(asrConfig, asrRequest, asrRequestContent);
+                    String sign = SignBuilder.createGetSign(url, asrConfig.getSecretKey(), asrRequest);
+                    WebSocketListener webSocketListener = createWebSocketListener();
+                    webSocket = wsClientService.asrWebSocket(asrConfig.getToken(), url, sign, webSocketListener);
+                    isConnect = true;
+                    boolean countDown = startLatch.await(SpeechRecognitionSysConfig.wsStartMethodWait,
+                            TimeUnit.SECONDS);
+                    if (!countDown) {
+                        throw new SdkRunException(AsrConstant.Code.CODE_10001);
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                return false;
+            } finally {
+                lock.unlock();
+            }
+        }
+        return true;
     }
 
     /**
      * 创建ws连接
      */
     @Override
-    public void start() {
-        startFlag.set(true);
-        createWebsocket();
-        if (listener != null) {
-            //start
-            SpeechRecognitionResponse recognitionResponse = new SpeechRecognitionResponse();
-            recognitionResponse.setCode(0);
-            recognitionResponse.setStreamId(asrRequestContent.getStreamId());
-            recognitionResponse.setFinalSpeech(0);
-            recognitionResponse.setVoiceId(asrRequestContent.getVoiceId());
-            recognitionResponse.setMessage("success");
-            listener.onRecognitionStart(recognitionResponse);
+    public void start() throws SdkRunException {
+        Boolean success = createWebsocket();
+        if (success) {
+            startFlag.set(true);
+            if (listener != null) {
+                //start
+                SpeechRecognitionResponse recognitionResponse = new SpeechRecognitionResponse();
+                recognitionResponse.setCode(0);
+                recognitionResponse.setStreamId(asrRequestContent.getStreamId());
+                recognitionResponse.setFinalSpeech(0);
+                recognitionResponse.setVoiceId(asrRequestContent.getVoiceId());
+                recognitionResponse.setMessage("success");
+                listener.onRecognitionStart(recognitionResponse);
+            }
+            //执行统计逻辑
+            tractionManager.beginTraction(asrRequestContent.getStreamId());
         }
-        //执行统计逻辑
-        tractionManager.beginTraction(asrRequestContent.getStreamId());
     }
 
     /**
@@ -159,27 +219,37 @@ public class SpeechWsRecognizer implements SpeechRecognizer {
      * @param data 数据
      */
     @Override
-    public void write(byte[] data) {
+    public void write(byte[] data) throws SdkRunException {
         if (!startFlag.get()) {
-            throw new RuntimeException("please call start method!!");
+            ReportService.ifLogMessage(getId(), "method " + adder.get() +
+                    " package please call start method!!", false);
+            throw new SdkRunException(AsrConstant.Code.CODE_10002);
         }
-        if (!endFlag.get()) {
-            createWebsocket();
-            //发送数据
-            ReportService.ifLogMessage(getId(), "send " + adder.get() + " package", false);
-            boolean success = webSocket.send(ByteString.of(data));
-            ReportService.ifLogMessage(getId(), "send " + adder.get() + " package " + success, false);
-            adder.incrementAndGet();
-            if (!success) {
-                for (int i = 0; i < SpeechRecognitionSysConfig.retryRequestNum; i++) {
-                    success = webSocket.send(ByteString.of(data));
-                    if (success) {
-                        break;
-                    }
+        if (endFlag.get()) {
+            ReportService.ifLogMessage(getId(), "method " + adder.get() +
+                    " can`t write,because you call stop method or send message fail", false);
+            throw new SdkRunException(AsrConstant.Code.CODE_10003);
+        }
+        if (!isConnect) {
+            ReportService.ifLogMessage(getId(), "method " + adder.get() +
+                    " client is closing", false);
+            throw new SdkRunException(AsrConstant.Code.CODE_10004);
+        }
+        //发送数据
+        ReportService.ifLogMessage(getId(), "send " + adder.get() + " package", false);
+        boolean success = webSocket.send(ByteString.of(data));
+        ReportService.ifLogMessage(getId(), "send " + adder.get() + " package " + success, false);
+        adder.incrementAndGet();
+        if (!success) {
+            for (int i = 0; i < SpeechRecognitionSysConfig.retryRequestNum; i++) {
+                success = webSocket.send(ByteString.of(data));
+                if (success) {
+                    break;
                 }
             }
         }
     }
+
 
     /**
      * 发送尾包数据
@@ -188,7 +258,6 @@ public class SpeechWsRecognizer implements SpeechRecognizer {
      */
     private void write(String data) {
         if (!endFlag.get()) {
-            createWebsocket();
             //发送数据
             ReportService.ifLogMessage(getId(), "send " + adder.get() + " end package", false);
             adder.incrementAndGet();
@@ -209,9 +278,14 @@ public class SpeechWsRecognizer implements SpeechRecognizer {
         //发送尾包
         write(JsonUtil.toJson(MapUtil.builder().put("type", "end").build()));
         endFlag.set(true);
+        try {
+            closeLatch.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            ReportService.ifLogMessage(getId(), "stop_exception:" + e.getMessage(), false);
+        }
         return true;
     }
-
 
     /**
      * 返回WebSocketListener
@@ -226,6 +300,7 @@ public class SpeechWsRecognizer implements SpeechRecognizer {
                 super.onClosed(webSocket, code, reason);
                 ReportService.ifLogMessage(getId(), "ws onClosed" + reason, false);
                 isConnect = false;
+                countDownStop("onClosed");
             }
 
             @Override
@@ -233,6 +308,7 @@ public class SpeechWsRecognizer implements SpeechRecognizer {
                 super.onClosing(webSocket, code, reason);
                 ReportService.ifLogMessage(getId(), "ws onClosing", false);
                 isConnect = false;
+                countDownStop("onClosing");
             }
 
             @SneakyThrows
@@ -243,6 +319,14 @@ public class SpeechWsRecognizer implements SpeechRecognizer {
                     ReportService.ifLogMessage(getId(), "onFailure:reconnect,"
                             + t.getMessage() + t.getLocalizedMessage(), true);
                 }
+                countDownStart("onFailure");
+                countDownStop("onFailure");
+                String trace = Tutils.getStackTrace(t);
+                if (trace != null && StringUtils.contains(trace, "Socket closed")) {
+                    //服务端主动释放连接socket close 直接return
+                    return;
+                }
+                ReportService.ifLogMessage(getId(), "onFailure:" + Tutils.getStackTrace(t), true);
                 if (response != null) {
                     ReportService.ifLogMessage(getId(), "onFailure:" + response.message() + "_"
                             + t.getMessage(), false);
@@ -269,17 +353,16 @@ public class SpeechWsRecognizer implements SpeechRecognizer {
                     if (response.getCode() == 0) {
                         //回调
                         resultCallBack(response);
-                        ReportService.report(true, String.valueOf(response.getCode()), asrConfig, getId(), asrRequest,
-                                response, asrConfig.getWsUrl(), response.getMessage());
+                        ReportService.report(true, String.valueOf(response.getCode()), asrConfig,
+                                getId(), asrRequest, response, asrConfig.getWsUrl(), response.getMessage());
                     } else {
-                        ReportService.report(false, String.valueOf(response.getCode()), asrConfig, getId(), asrRequest,
-                                response, asrConfig.getWsUrl(), response.getMessage());
+                        ReportService.report(false, String.valueOf(response.getCode()),
+                                asrConfig, getId(), asrRequest, response, asrConfig.getWsUrl(), response.getMessage());
                         response.setStreamId(asrRequestContent.getStreamId());
                         response.setVoiceId(asrRequestContent.getVoiceId());
                         //错误，直接结束
                         endFlag.set(true);
-                        ReportService.report(false, String.valueOf(response.getCode()), asrConfig, getId(), asrRequest,
-                                response, asrConfig.getWsUrl(), response.getMessage());
+                        webSocket.cancel();
                         listener.onFail(response);
                     }
                 }
@@ -299,6 +382,7 @@ public class SpeechWsRecognizer implements SpeechRecognizer {
                     ReportService.ifLogMessage(getId(), "onOpen: fail", false);
                     webSocket.close(1001, "onOpen");
                 }
+                countDownStart("onOpen");
             }
         };
     }
@@ -346,6 +430,8 @@ public class SpeechWsRecognizer implements SpeechRecognizer {
                 recognizerResponse.setMessageId(response.getMessageId());
                 listener.onRecognitionComplete(recognizerResponse);
             }
+            countDownStop("final");
+            webSocket.cancel();
         }
     }
 
@@ -374,27 +460,29 @@ public class SpeechWsRecognizer implements SpeechRecognizer {
         }
     }
 
-    /**
-     * 创建websocket
-     */
-    private void createWebsocket() {
-        if (!isConnect || webSocket == null) {
-            //如果没有连接则创建连接
-            try {
-                lock.lock();
-                if (!isConnect || webSocket == null) {
-                    ReportService.ifLogMessage(getId(), "create websocket", false);
-                    asrRequest.setTimestamp(System.currentTimeMillis() / 1000);
-                    asrRequest.setExpired(System.currentTimeMillis() / 1000 + 86400);
-                    String url = speechRecognitionSignService.signWsUrl(asrConfig, asrRequest, asrRequestContent);
-                    String sign = SignBuilder.createGetSign(url, asrConfig.getSecretKey(), asrRequest);
-                    WebSocketListener webSocketListener = createWebSocketListener();
-                    webSocket = WsClientService.asrWebSocket(asrConfig.getToken(), url, sign, webSocketListener);
-                    isConnect = true;
-                }
-            } finally {
-                lock.unlock();
+    private void countDownStop(String source) {
+        try {
+            if (closeLatch.getCount() > 0) {
+                closeLatch.countDown();
+                ReportService.ifLogMessage(asrRequestContent.getVoiceId(),
+                        source + "_closeLatch_countDown", false);
             }
+        } catch (Exception e) {
+            ReportService.ifLogMessage(asrRequestContent.getVoiceId(),
+                    source + "_closeLatch_exception" + e.getMessage(), true);
+        }
+    }
+
+    private void countDownStart(String source) {
+        try {
+            if (startLatch.getCount() > 0) {
+                startLatch.countDown();
+                ReportService.ifLogMessage(asrRequestContent.getVoiceId(),
+                        source + "_startLatch_countDown", false);
+            }
+        } catch (Exception e) {
+            ReportService.ifLogMessage(asrRequestContent.getVoiceId(),
+                    source + " _startLatch_countDown" + e.getMessage(), true);
         }
     }
 }

@@ -149,15 +149,15 @@ public class HttpBaseService {
     /**
      * HttpBaseService
      *
-     * @param streamId              流的唯一标示
-     * @param config                配置{@link AsrConfig}
-     * @param request               请求参数{@link AsrRequest}
+     * @param streamId 流的唯一标示
+     * @param config 配置{@link AsrConfig}
+     * @param request 请求参数{@link AsrRequest}
      * @param realTimeEventListener 结果回调函数{@link RealTimeEventListener}
-     * @param baseEventListener     回调函数{@link BaseEventListener}
+     * @param baseEventListener 回调函数{@link BaseEventListener}
      */
     public HttpBaseService(String streamId, AsrConfig config, AsrRequest request,
-                           RealTimeEventListener realTimeEventListener,
-                           BaseEventListener<AsrResponse> baseEventListener) {
+            RealTimeEventListener realTimeEventListener,
+            BaseEventListener<AsrResponse> baseEventListener) {
         this.streamId = streamId;
         this.asrConfig = config;
         this.asrRequest = checkAsrRequest(request);
@@ -170,7 +170,7 @@ public class HttpBaseService {
     }
 
     public HttpBaseService(String streamId, AsrConfig config, AsrRequest request,
-                           SpeechRecognitionListener speechRecognitionListener) {
+            SpeechRecognitionListener speechRecognitionListener) {
         this.streamId = streamId;
         this.asrConfig = config;
         this.asrRequest = checkAsrRequest(request);
@@ -185,7 +185,7 @@ public class HttpBaseService {
      * 发送数据
      *
      * @param data 语音数据
-     * @param end  是否结束
+     * @param end 是否结束
      */
     protected void send(byte[] data, boolean end) {
         if (data == null) {
@@ -228,7 +228,7 @@ public class HttpBaseService {
     /**
      * 请求分发
      *
-     * @param bytes   语音数据
+     * @param bytes 语音数据
      * @param endFlag 结束标志
      * @return 请求唯一标示stamp
      */
@@ -267,14 +267,14 @@ public class HttpBaseService {
     /**
      * httpClient 请求处理
      *
-     * @param content     请求内容对象
-     * @param stamp       流唯一标示
-     * @param url         请求URL
-     * @param sign        签名
+     * @param content 请求内容对象
+     * @param stamp 流唯一标示
+     * @param url 请求URL
+     * @param sign 签名
      * @param tempRequest 请求参数
      */
     private void httpClientRequest(AsrRequestContent content,
-                                   String stamp, String url, String sign, AsrRequest tempRequest) {
+            String stamp, String url, String sign, AsrRequest tempRequest) {
         surplus.incrementAndGet();
         //同步
         if (SpeechRecognitionSysConfig.ifSyncHttp) {
@@ -289,15 +289,15 @@ public class HttpBaseService {
     /**
      * 异步识别请求
      *
-     * @param config      配置
-     * @param content     发送内容
-     * @param stamp       标签
-     * @param url         请求URL
-     * @param sign        签名
+     * @param config 配置
+     * @param content 发送内容
+     * @param stamp 标签
+     * @param url 请求URL
+     * @param sign 签名
      * @param tempRequest 请求参数
      */
     private void asyncRecRequest(AsrConfig config, AsrRequestContent content,
-                                 String stamp, String url, String sign, AsrRequest tempRequest) {
+            String stamp, String url, String sign, AsrRequest tempRequest) {
         httpClientService.asrAsyncHttp(stamp, sign, url, config.getToken(), content,
                 new FutureCallback<HttpResponse>() {
                     @Override
@@ -313,6 +313,8 @@ public class HttpBaseService {
 
                     @Override
                     public void failed(Exception e) {
+                        ReportService.ifLogMessage(content.getVoiceId(), "FutureCallback_failed" +
+                                Tutils.getStackTraceAsString(e), true);
                         AsrResponse asrResponse = null;
                         try {
                             //异常重试
@@ -334,15 +336,15 @@ public class HttpBaseService {
     /**
      * 同步请求
      *
-     * @param config      配置
-     * @param content     发送内容
-     * @param stamp       标签
-     * @param url         请求URL
-     * @param sign        签名
+     * @param config 配置
+     * @param content 发送内容
+     * @param stamp 标签
+     * @param url 请求URL
+     * @param sign 签名
      * @param tempRequest 请求参数
      */
     private void syncRecRequest(AsrConfig config, AsrRequestContent content, String stamp, String url,
-                                String sign, AsrRequest tempRequest) {
+            String sign, AsrRequest tempRequest) {
         AsrResponse asrResponse = null;
         try {
             //同步请求返回结果，可能异常，需要对异常处理
@@ -363,8 +365,8 @@ public class HttpBaseService {
      * 创建异常response
      *
      * @param content content
-     * @param stamp   stamp
-     * @param e       exception
+     * @param stamp stamp
+     * @param e exception
      * @return AsrResponse
      */
     private AsrResponse createExceptionResponse(AsrRequestContent content, String stamp, Exception e) {
@@ -389,11 +391,11 @@ public class HttpBaseService {
      * 处理结果
      *
      * @param asrResponse asrResponse
-     * @param e           e
-     * @param stamp       stamp
+     * @param e e
+     * @param stamp stamp
      */
     private void processFinally(AsrResponse asrResponse, Exception e, String stamp, String url,
-                                AsrRequest tempRequest, AsrRequestContent content) {
+            AsrRequest tempRequest, AsrRequestContent content) {
         content.setCostTime(System.currentTimeMillis() - content.getCostTime());
         if (asrResponse == null && content.getEnd() == 1) {
             asrResponse = new AsrResponse();
@@ -499,7 +501,7 @@ public class HttpBaseService {
      * 解析请求结果
      *
      * @param httpResponse httpResponse
-     * @param stamp        stamp
+     * @param stamp stamp
      * @return AsrResponse
      */
     private AsrResponse parseRecResponse(HttpResponse httpResponse, String stamp) {
@@ -568,17 +570,17 @@ public class HttpBaseService {
     /**
      * 处理异常
      *
-     * @param e           e
-     * @param stamp       stamp
-     * @param sign        sign
-     * @param url         url
-     * @param content     content
+     * @param e e
+     * @param stamp stamp
+     * @param sign sign
+     * @param url url
+     * @param content content
      * @param tempRequest tempRequest
-     * @param config      config
+     * @param config config
      * @return
      */
     private AsrResponse processException(Exception e, String stamp, String sign, String url,
-                                         AsrRequestContent content, AsrRequest tempRequest, AsrConfig config) {
+            AsrRequestContent content, AsrRequest tempRequest, AsrConfig config) {
         AsrResponse asrResponse = null;
         if (SpeechRecognitionSysConfig.ifSyncHttp) {
             asrResponse = retryRecRequest(stamp, sign, url, content);
@@ -658,7 +660,8 @@ public class HttpBaseService {
                                 if (response != null) {
                                     returnResult(response);
                                     if (response.getFinalSpeech() != null && response.getFinalSpeech() == 1) {
-                                        ReportService.ifLogMessage(response.getStamp(), "final Exit monitoring", false);
+                                        ReportService.ifLogMessage(response.getStamp(),
+                                                "final Exit monitoring", false);
                                         break;
                                     }
                                     result.remove(stamp);
@@ -786,6 +789,7 @@ public class HttpBaseService {
     @NoArgsConstructor
     @AllArgsConstructor
     static class ByteData {
+
         byte[] data;
     }
 

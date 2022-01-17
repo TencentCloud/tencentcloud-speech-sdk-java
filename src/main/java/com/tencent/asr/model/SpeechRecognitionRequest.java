@@ -25,6 +25,8 @@ import lombok.Setter;
 @Getter
 public class SpeechRecognitionRequest extends AsrRequest {
 
+    private String voiceId;
+
     /**
      * 初始化
      *

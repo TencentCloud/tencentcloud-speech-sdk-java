@@ -50,8 +50,6 @@ public class HttpClientService {
 
     private static final String STREAM_TYPE = "application/octet-stream";
 
-    private HttpClientContext context = HttpClientContext.create();
-
     private CloseableHttpAsyncClient asyncClient;
 
     private CloseableHttpClient syncClient;
@@ -113,14 +111,14 @@ public class HttpClientService {
     /**
      * ASR 异步http请求
      *
-     * @param stamp    请求标示
-     * @param sign     签名
-     * @param url      请求URL
-     * @param item     请求内容
+     * @param stamp 请求标示
+     * @param sign 签名
+     * @param url 请求URL
+     * @param item 请求内容
      * @param callback 回调
      */
     public void asrAsyncHttp(String stamp, String sign, String url, String token,
-                             AsrRequestContent item, FutureCallback<HttpResponse> callback) {
+            AsrRequestContent item, FutureCallback<HttpResponse> callback) {
         if (!closed) {
             ReportService.ifLogMessage(stamp, url, false);
             HttpPost httpPost = new HttpPost(url);
@@ -130,7 +128,7 @@ public class HttpClientService {
                 httpPost.addHeader("X-TC-Token", token);
             }
             httpPost.setEntity(new ByteArrayEntity(item.getBytes()));
-            Future future = asyncClient.execute(httpPost, context, callback);
+            Future future = asyncClient.execute(httpPost, callback);
         }
     }
 
@@ -139,13 +137,13 @@ public class HttpClientService {
      * 同步请求
      *
      * @param stamp 请求标示
-     * @param sign  签名
-     * @param url   请求URL
-     * @param item  请求内容
+     * @param sign 签名
+     * @param url 请求URL
+     * @param item 请求内容
      * @return CloseableHttpResponse
      */
     public CloseableHttpResponse syncHttp(String stamp, String sign, String url,
-                                          String token, AsrRequestContent item) throws IOException {
+            String token, AsrRequestContent item) throws IOException {
         if (!closed) {
             ReportService.ifLogMessage(stamp, "url:" + url, false);
             HttpPost httpPost = new HttpPost(url);
@@ -155,7 +153,7 @@ public class HttpClientService {
                 httpPost.addHeader("X-TC-Token", token);
             }
             httpPost.setEntity(new ByteArrayEntity(item.getBytes()));
-            return getSyncClient().execute(httpPost, context);
+            return getSyncClient().execute(httpPost, HttpClientContext.create());
         }
         return null;
     }
@@ -165,7 +163,7 @@ public class HttpClientService {
      * 处理httpClient请求结果
      *
      * @param httpResponse httpClient response
-     * @param stamp        请求标示
+     * @param stamp 请求标示
      * @return 解析结果
      */
     public String dealHttpClientResponse(HttpResponse httpResponse, String stamp) {

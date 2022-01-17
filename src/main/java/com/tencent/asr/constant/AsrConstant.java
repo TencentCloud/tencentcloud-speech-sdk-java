@@ -192,7 +192,13 @@ public class AsrConstant {
         CODE_124(124, "后台识别服务器识别失败，请从seq = 0重传"),
         CODE_125(125, "后台识别服务器识别失败，请重新尝试"),
         CODE_126(126, "后台识别服务器音频分片等待超时，请从seq = 0重传"),
-        CODE_127(127, "后台识别服务器音频分片重复");
+        CODE_127(127, "后台识别服务器音频分片重复"),
+
+        CODE_10001(10001, "create websocket client error"),
+        CODE_10002(10002, "please call start method!!"),
+        CODE_10003(10003, "can`t write,because you call stop method or  onmessage fail"),
+        CODE_10004(10004, "client is closing"),
+        CODE_10009(10009, "secretId null or secretKey null");
 
         Code(Integer code, String message) {
             this.code = code;

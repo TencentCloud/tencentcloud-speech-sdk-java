@@ -1,6 +1,18 @@
+### 第14次发布
+
+版本号 1.0.18 （最新版本）
+
+本次发布包含了以下内容：
+
+1. 优化websocket识别，添加配置类SpeechWebsocketConfig。
+2. 添加日志拦截器SdkLogInterceptor。
+3. 优化异常处理，添加SdkRunException。
+5. websocket request 支持配置voiceId参数。
+6. 优化http请求参数，修复http实时识别问题。
+
 ### 第13次发布
 
-版本号 1.0.17 （最新版本）
+版本号 1.0.17 
 
 本次发布包含了以下内容：
 

@@ -16,14 +16,21 @@
 
 package com.tencent;
 
-import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.RandomUtil;
 import com.tencent.asr.constant.AsrConstant;
+import com.tencent.asr.constant.AsrConstant.RequestWay;
 import com.tencent.asr.model.AsrConfig;
 import com.tencent.asr.model.Credential;
 import com.tencent.asr.model.SpeechRecognitionRequest;
 import com.tencent.asr.model.SpeechRecognitionSysConfig;
-import com.tencent.asr.service.*;
+import com.tencent.asr.model.SpeechWebsocketConfig;
+import com.tencent.asr.service.FlashRecognizer;
+import com.tencent.asr.service.SdkRunException;
+import com.tencent.asr.service.SpeechHttpRecognizer;
+import com.tencent.asr.service.SpeechRecognitionListener;
+import com.tencent.asr.service.SpeechRecognizer;
+import com.tencent.asr.service.SpeechWsRecognizer;
+import com.tencent.asr.service.WsClientService;
 import com.tencent.core.model.GlobalConfig;
 import com.tencent.core.service.StatService;
 import com.tencent.tts.model.SpeechSynthesisConfig;
@@ -32,6 +39,7 @@ import com.tencent.tts.service.SpeechSynthesisListener;
 import com.tencent.tts.service.SpeechSynthesizer;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * SpeechClient
@@ -51,6 +59,8 @@ public class SpeechClient {
 
     private String token;
 
+    private WsClientService wsClientService;
+
 
     private SpeechClient() {
     }
@@ -58,8 +68,8 @@ public class SpeechClient {
     /**
      * 创建实例
      *
-     * @param appId     appId
-     * @param secretId  secretId
+     * @param appId appId
+     * @param secretId secretId
      * @param secretKey secretKey
      * @return SpeechClient
      */
@@ -70,16 +80,34 @@ public class SpeechClient {
     /**
      * 创建实例
      *
-     * @param appId     appId
-     * @param secretId  secretId
+     * @param appId appId
+     * @param secretId secretId
      * @param secretKey secretKey
-     * @param token     token
+     * @param token token
      * @return SpeechClient
      */
     public static SpeechClient newInstance(String appId, String secretId, String secretKey, String token) {
-        Assert.isFalse(appId == null, "appId Cannot be empty");
-        Assert.notBlank(secretKey, "secretKey Cannot be empty");
-        Assert.notBlank(secretId, "secretId Cannot be empty");
+        return newInstance(appId, secretId, secretKey, token, null);
+    }
+
+    /**
+     * 创建ws实例
+     *
+     * @param appId appId
+     * @param secretId secretId
+     * @param secretKey secretKey
+     * @param token token
+     * @param config ws config
+     * @return SpeechClient
+     */
+    public static SpeechClient newInstance(String appId, String secretId,
+            String secretKey, String token, SpeechWebsocketConfig config) {
+        if (StringUtils.isEmpty(secretId)) {
+            throw new SdkRunException(AsrConstant.Code.CODE_10009);
+        }
+        if (StringUtils.isEmpty(secretKey)) {
+            throw new SdkRunException(AsrConstant.Code.CODE_10009);
+        }
         if (speechClient == null) {
             synchronized (SpeechClient.class) {
                 if (speechClient == null) {
@@ -88,6 +116,12 @@ public class SpeechClient {
                     speechClient.setSecretId(secretId);
                     speechClient.setSecretKey(secretKey);
                     speechClient.setToken(token);
+                    if (RequestWay.Websocket.equals(SpeechRecognitionSysConfig.requestWay)) {
+                        if (config == null) {
+                            config = SpeechWebsocketConfig.init();
+                        }
+                        speechClient.wsClientService = new WsClientService(config);
+                    }
                     if (GlobalConfig.ifOpenStat) {
                         StatService.setConfig(secretId, secretKey, appId, token);
                         StatService.startReportStat();
@@ -114,11 +148,11 @@ public class SpeechClient {
      * 创建SpeechSynthesizer
      *
      * @param speechSynthesisRequest request
-     * @param eventListener          回调
+     * @param eventListener 回调
      * @return SpeechSynthesizer
      */
     public SpeechSynthesizer newSpeechSynthesizer(SpeechSynthesisRequest speechSynthesisRequest,
-                                                  SpeechSynthesisListener eventListener) {
+            SpeechSynthesisListener eventListener) {
         SpeechSynthesisConfig config = SpeechSynthesisConfig.builder()
                 .appId(Long.valueOf(this.appId))
                 .secretId(this.secretId)
@@ -132,12 +166,12 @@ public class SpeechClient {
     /**
      * 创建SpeechRecognizer，默认使用websocket
      *
-     * @param request                   请求参数
+     * @param request 请求参数
      * @param speechRecognitionListener 回调
      * @return SpeechRecognizer
      */
     public SpeechRecognizer newSpeechRecognizer(SpeechRecognitionRequest request,
-                                                SpeechRecognitionListener speechRecognitionListener) {
+            SpeechRecognitionListener speechRecognitionListener) {
         AsrConfig config = AsrConfig.builder()
                 .appId(this.appId)
                 .secretId(this.secretId)
@@ -152,7 +186,29 @@ public class SpeechClient {
             return new SpeechHttpRecognizer(RandomUtil.randomString(8),
                     config, request, speechRecognitionListener);
         }
-        return new SpeechWsRecognizer(RandomUtil.randomString(8),
+        return newWsSpeechRecognizer(request, speechRecognitionListener);
+    }
+
+    /**
+     * 创建SpeechRecognizer，websocket
+     *
+     * @param request 请求参数
+     * @param speechRecognitionListener 回调
+     * @return SpeechRecognizer
+     */
+    public SpeechRecognizer newWsSpeechRecognizer(SpeechRecognitionRequest request,
+            SpeechRecognitionListener speechRecognitionListener) {
+        AsrConfig config = AsrConfig.builder()
+                .appId(this.appId)
+                .secretId(this.secretId)
+                .secretKey(this.secretKey)
+                .token(token)
+                .build();
+        if (request.getEngineModelType() == null) {
+            throw new RuntimeException("engineModelType can not be null,please "
+                    + "set SpeechRecognitionRequest EngineModelType !!");
+        }
+        return new SpeechWsRecognizer(this.wsClientService, RandomUtil.randomString(8),
                 config, request, speechRecognitionListener);
     }
 

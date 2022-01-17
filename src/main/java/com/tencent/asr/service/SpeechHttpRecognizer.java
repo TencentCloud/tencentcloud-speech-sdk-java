@@ -80,7 +80,6 @@ public class SpeechHttpRecognizer extends HttpBaseService implements TCall<byte[
      *
      * @return 是否结束
      */
-    @Deprecated
     @Override
     public Boolean end() {
         return stop();
@@ -93,7 +92,6 @@ public class SpeechHttpRecognizer extends HttpBaseService implements TCall<byte[
      * @return TCall
      * @throws IOException IOException
      */
-    @Deprecated
     @Override
     public TCall execute(byte[] stream) throws IOException {
         write(stream);
