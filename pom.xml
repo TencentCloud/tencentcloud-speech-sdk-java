@@ -6,7 +6,7 @@
 
     <groupId>com.tencentcloudapi</groupId>
     <artifactId>tencentcloud-speech-sdk-java</artifactId>
-    <version>1.0.18</version>
+    <version>1.0.22-SNAPSHOT</version>
     <name>tencentcloud-speech-sdk-java</name>
     <packaging>jar</packaging>
     <description>Tencent Cloud ASR and TTS SDK for Java</description>
@@ -98,89 +98,44 @@
             <artifactId>jackson-core</artifactId>
             <version>2.11.2</version>
         </dependency>
-    </dependencies>
 
-    <licenses>
-        <license>
-            <name>The Apache Software License, Version 2.0</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-        </license>
-    </licenses>
+        <!-- https://mvnrepository.com/artifact/com.google.code.gson/gson -->
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.9.0</version>
+        </dependency>
+
+    </dependencies>
 
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.sonatype.plugins</groupId>
-                <artifactId>nexus-staging-maven-plugin</artifactId>
-                <version>1.6.7</version>
-                <extensions>true</extensions>
-                <configuration>
-                    <serverId>releases</serverId>
-                    <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
-                </configuration>
-            </plugin>
+            <!-- Maven Assembly Plugin -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.3.2</version>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.4.1</version>
                 <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
-                    <encoding>UTF-8</encoding>
+                    <!-- get all project dependencies -->
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                    <!-- MainClass in mainfest make a executable jar -->
+                    <archive>
+                        <manifest>
+                            <mainClass>com.healchow.consumer.Main</mainClass>
+                        </manifest>
+                    </archive>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>2.3.2</version>
-                <configuration>
-                    <excludes>
-                    </excludes>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-                <version>2.1</version>
                 <executions>
+                    <!-- 配置执行器 -->
                     <execution>
-                        <id>attach-sources</id>
+                        <id>make-assembly</id>
+                        <!-- 绑定到package命令的生命周期上 -->
+                        <phase>package</phase>
                         <goals>
-                            <goal>jar-no-fork</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.10.3</version>
-                <executions>
-                    <execution>
-                        <id>attach-javadocs</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <encoding>UTF-8</encoding>
-                    <!-- 禁用java 8 的DocLint新特性，以确保当javadoc有编译错误时，也能正常生成javadoc jar包-->
-                    <additionalparam>-Xdoclint:none</additionalparam>
-                    <detectJavaApiLink>false</detectJavaApiLink>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-gpg-plugin</artifactId>
-                <version>1.6</version>
-                <executions>
-                    <execution>
-                        <id>sign-artifacts</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>sign</goal>
+                            <!-- 只运行一次 -->
+                            <goal>single</goal>
                         </goals>
                     </execution>
                 </executions>

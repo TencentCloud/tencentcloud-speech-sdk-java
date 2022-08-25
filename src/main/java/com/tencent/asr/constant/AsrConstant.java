@@ -194,11 +194,11 @@ public class AsrConstant {
         CODE_126(126, "后台识别服务器音频分片等待超时，请从seq = 0重传"),
         CODE_127(127, "后台识别服务器音频分片重复"),
 
-        CODE_10001(10001, "create websocket client error"),
-        CODE_10002(10002, "please call start method!!"),
-        CODE_10003(10003, "can`t write,because you call stop method or  onmessage fail"),
-        CODE_10004(10004, "client is closing"),
-        CODE_10009(10009, "secretId null or secretKey null");
+        CODE_10001(10001, "创建websocket连接失败"),
+        CODE_10002(10002, "请调用start方法开始创建链接"),
+        CODE_10003(10003, "写入失败，由于失败（onFail）或者已调用stop方法"),
+        CODE_10004(10004, "连接关闭"),
+        CODE_10009(10009, "secretId 或 secretKey 为空");
 
         Code(Integer code, String message) {
             this.code = code;

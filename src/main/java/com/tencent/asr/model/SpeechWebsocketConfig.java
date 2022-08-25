@@ -16,7 +16,9 @@
 
 package com.tencent.asr.model;
 
+import java.net.ProxySelector;
 import java.util.concurrent.ExecutorService;
+import okhttp3.Authenticator;
 
 /**
  * SpeechWebsocketConfig websocket 请求配置
@@ -61,6 +63,31 @@ public class SpeechWebsocketConfig {
      * dispatch executorService
      */
     private ExecutorService executorService;
+
+    /**
+     * 是否开启代理模式
+     */
+    private Boolean useProxy;
+
+    /**
+     * 代理hostname
+     */
+    private String proxyHost;
+
+    /**
+     * 代理port
+     */
+    private Integer proxyPort;
+
+    /**
+     * okhttp proxySelector
+     */
+    private ProxySelector proxySelector;
+
+    /**
+     * okhttp authenticator
+     */
+    private Authenticator authenticator;
 
     public Integer getWsWriteTimeOut() {
         return wsWriteTimeOut;
@@ -126,6 +153,46 @@ public class SpeechWebsocketConfig {
         this.executorService = executorService;
     }
 
+    public String getProxyHost() {
+        return proxyHost;
+    }
+
+    public void setProxyHost(String proxyHost) {
+        this.proxyHost = proxyHost;
+    }
+
+    public Integer getProxyPort() {
+        return proxyPort;
+    }
+
+    public void setProxyPort(Integer proxyPort) {
+        this.proxyPort = proxyPort;
+    }
+
+    public Boolean getUseProxy() {
+        return useProxy;
+    }
+
+    public void setUseProxy(Boolean useProxy) {
+        this.useProxy = useProxy;
+    }
+
+    public ProxySelector getProxySelector() {
+        return proxySelector;
+    }
+
+    public void setProxySelector(ProxySelector proxySelector) {
+        this.proxySelector = proxySelector;
+    }
+
+    public Authenticator getAuthenticator() {
+        return authenticator;
+    }
+
+    public void setAuthenticator(Authenticator authenticator) {
+        this.authenticator = authenticator;
+    }
+
     public static SpeechWebsocketConfig init() {
         SpeechWebsocketConfig config = new SpeechWebsocketConfig();
         config.setWsConnectTimeOut(SpeechRecognitionSysConfig.wsConnectTimeOut);
@@ -135,6 +202,7 @@ public class SpeechWebsocketConfig {
         config.setWsMaxIdleConnections(SpeechRecognitionSysConfig.wsMaxIdleConnections);
         config.setWsMaxRequests(SpeechRecognitionSysConfig.wsMaxRequests);
         config.setWsMaxRequestsPerHost(SpeechRecognitionSysConfig.wsMaxRequestsPerHost);
+        config.setUseProxy(false);
         return config;
     }
 }

@@ -56,7 +56,7 @@ public class SpeechRecognitionResponse {
     @JsonProperty(value = "result")
     private SpeechRecognitionResponseResult result;
 
-
+    @JsonProperty(value = "message_id")
     private String messageId;
 
 

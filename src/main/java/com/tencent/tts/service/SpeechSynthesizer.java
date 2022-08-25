@@ -27,8 +27,15 @@ import com.tencent.tts.model.SpeechSynthesisConfig;
 import com.tencent.tts.model.SpeechSynthesisRequest;
 import com.tencent.tts.model.SpeechSynthesisRequestContent;
 import com.tencent.tts.model.SpeechSynthesisResponse;
+import com.tencent.tts.model.SpeechSynthesisSysConfig;
 import com.tencent.tts.utils.LineSplitUtils;
 import com.tencent.tts.utils.Ttsutils;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.Charset;
+import java.util.List;
+import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.ClientProtocolException;
@@ -36,16 +43,11 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.Charset;
-import java.util.List;
-import java.util.TreeMap;
-import java.util.concurrent.atomic.AtomicInteger;
+import org.apache.http.impl.client.HttpClientBuilder;
 
 public class SpeechSynthesizer {
+
+    private CloseableHttpClient httpclient;
 
     /**
      * 请求配置
@@ -83,18 +85,35 @@ public class SpeechSynthesizer {
     /**
      * 初始化
      *
-     * @param speechSynthesisConfig  配置
+     * @param speechSynthesisConfig 配置
      * @param speechSynthesisRequest 请求参数
-     * @param eventListener          结果回调函数
+     * @param eventListener 结果回调函数
      */
     public SpeechSynthesizer(SpeechSynthesisConfig speechSynthesisConfig,
-                             SpeechSynthesisRequest speechSynthesisRequest, SpeechSynthesisListener eventListener) {
+            SpeechSynthesisRequest speechSynthesisRequest, SpeechSynthesisListener eventListener) {
         this.speechSynthesisConfig = speechSynthesisConfig;
         this.speechSynthesisRequest = speechSynthesisRequest;
         this.eventListener = eventListener;
-        sessionParentId = speechSynthesisConfig.getAppId() + "_tts_"
-                + System.currentTimeMillis() + RandomUtil.randomString(4);
+        if (StringUtils.isEmpty(speechSynthesisRequest.getSessionId())) {
+            sessionParentId = speechSynthesisConfig.getAppId() + "_tts_"
+                    + System.currentTimeMillis() + RandomUtil.randomString(4);
+        } else {
+            sessionParentId = speechSynthesisRequest.getSessionId();
+        }
         index = new AtomicInteger(0);
+        initClient();
+    }
+
+    public void initClient() {
+        if (SpeechSynthesisSysConfig.httpclient == null) {
+            HttpClientBuilder hb = HttpClientBuilder.create();
+            if (SpeechSynthesisSysConfig.UseProxy) {
+                hb.setProxy(SpeechSynthesisSysConfig.HostProxy);
+            }
+            this.httpclient = hb.build();
+        } else {
+            this.httpclient = SpeechSynthesisSysConfig.httpclient;
+        }
     }
 
 
@@ -176,12 +195,12 @@ public class SpeechSynthesizer {
      * @return
      */
     private SpeechSynthesisResponse speechRequest(String text, Integer seq, String sessionParentId) {
-        SpeechSynthesisResponse response = request(text, seq, sessionParentId);
+        SpeechSynthesisResponse response = request(text, seq);
         if (!response.getSuccess() && "-1".equals(response.getCode())) {
             int retryNum = 2;
             //失败重试2次
             for (int i = 0; i < retryNum; i++) {
-                response = request(text, seq, sessionParentId);
+                response = request(text, seq);
                 if (response.getSuccess()) {
                     ReportService.ifLogMessage(response.getSessionId(), "retry success:" + i, false);
                     break;
@@ -200,12 +219,14 @@ public class SpeechSynthesizer {
     /**
      * 分发请求
      *
-     * @param text            文本
-     * @param seq             序列
-     * @param sessionParentId sessionId
+     * @param text 文本
+     * @param seq 序列
      */
-    private SpeechSynthesisResponse request(String text, Integer seq, String sessionParentId) {
-        String sessionId = sessionParentId + "_" + seq;
+    private SpeechSynthesisResponse request(String text, Integer seq) {
+        String sessionId = sessionParentId;
+        if (StringUtils.isNotEmpty(speechSynthesisRequest.getSessionId())) {
+            sessionId = speechSynthesisRequest.getSessionId();
+        }
         SpeechSynthesisResponse synthesizerResponse = new SpeechSynthesisResponse();
         synthesizerResponse.setSeq(seq);
         synthesizerResponse.setSessionId(sessionId);
@@ -220,7 +241,6 @@ public class SpeechSynthesizer {
         String url = speechSynthesisSignService.signUrl(speechSynthesisConfig, speechSynthesisRequest, content, map);
         String sign = SignBuilder.createPostSign(url, speechSynthesisConfig.getSecretKey(), speechSynthesisRequest);
 
-        CloseableHttpClient httpclient = HttpClients.createDefault();
         try {
             HttpPost httpPost = new HttpPost(speechSynthesisConfig.getTtsUrl());
             httpPost.addHeader("Authorization", sign);

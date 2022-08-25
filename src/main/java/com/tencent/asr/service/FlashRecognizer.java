@@ -40,6 +40,7 @@ import org.apache.http.util.EntityUtils;
 
 //极速版
 public class FlashRecognizer {
+
     /**
      * 签名service
      */
@@ -49,20 +50,22 @@ public class FlashRecognizer {
 
     private static CloseableHttpClient client;
 
-    private HttpClientContext context = HttpClientContext.create();
 
     static {
         PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
         cm.setMaxTotal(SpeechRecognitionSysConfig.MaxTotal);
         cm.setDefaultMaxPerRoute(SpeechRecognitionSysConfig.defaultMaxPerRoute);
-        RequestConfig requestConfig = RequestConfig.custom()
-                .setConnectTimeout(SpeechRecognitionSysConfig.flashConnectTimeout)
+        RequestConfig.Builder rb = RequestConfig.custom();
+        if (SpeechRecognitionSysConfig.httpUseProxy) {
+            rb.setProxy(SpeechRecognitionSysConfig.httpHostProxy);
+        }
+        RequestConfig requestConfig = rb.setConnectTimeout(SpeechRecognitionSysConfig.flashConnectTimeout)
                 .setSocketTimeout(SpeechRecognitionSysConfig.flashSocketTimeout)
                 .setConnectionRequestTimeout(SpeechRecognitionSysConfig.flashConnectionRequestTimeout)
                 .build();
         client = HttpClients.custom().setConnectionManager(cm)
                 .setConnectionReuseStrategy(new NoConnectionReuseStrategy())
-                .setRetryHandler(new DefaultHttpRequestRetryHandler(3,true))
+                .setRetryHandler(new DefaultHttpRequestRetryHandler(3, true))
                 .setDefaultRequestConfig(requestConfig).build();
 
     }
@@ -93,11 +96,12 @@ public class FlashRecognizer {
                 httpPost.addHeader("X-TC-Token", config.getToken());
             }
             httpPost.setEntity(new ByteArrayEntity(data));
-            httpResponse = client.execute(httpPost, context);
+            httpResponse = client.execute(httpPost, HttpClientContext.create());
             String responseStr = EntityUtils.toString(httpResponse.getEntity(), "utf-8");
             FlashRecognitionResponse response = JsonUtil.fromJson(responseStr, FlashRecognitionResponse.class);
             return response;
         } catch (Exception e) {
+            e.printStackTrace();
             FlashRecognitionResponse response = new FlashRecognitionResponse();
             response.setMessage(Tutils.getStackTraceAsString(e));
             response.setRequestId(RandomUtil.randomString(11));
@@ -111,7 +115,7 @@ public class FlashRecognizer {
                     httpResponse.close();
                 }
             } catch (Exception e) {
-
+                e.printStackTrace();
             }
 
         }

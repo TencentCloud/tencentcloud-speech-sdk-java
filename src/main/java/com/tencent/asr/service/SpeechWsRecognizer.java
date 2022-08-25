@@ -198,16 +198,6 @@ public class SpeechWsRecognizer implements SpeechRecognizer {
         Boolean success = createWebsocket();
         if (success) {
             startFlag.set(true);
-            if (listener != null) {
-                //start
-                SpeechRecognitionResponse recognitionResponse = new SpeechRecognitionResponse();
-                recognitionResponse.setCode(0);
-                recognitionResponse.setStreamId(asrRequestContent.getStreamId());
-                recognitionResponse.setFinalSpeech(0);
-                recognitionResponse.setVoiceId(asrRequestContent.getVoiceId());
-                recognitionResponse.setMessage("success");
-                listener.onRecognitionStart(recognitionResponse);
-            }
             //执行统计逻辑
             tractionManager.beginTraction(asrRequestContent.getStreamId());
         }
@@ -279,7 +269,7 @@ public class SpeechWsRecognizer implements SpeechRecognizer {
         write(JsonUtil.toJson(MapUtil.builder().put("type", "end").build()));
         endFlag.set(true);
         try {
-            closeLatch.await();
+            closeLatch.await(SpeechRecognitionSysConfig.wsStopMethodWait, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             e.printStackTrace();
             ReportService.ifLogMessage(getId(), "stop_exception:" + e.getMessage(), false);
@@ -315,31 +305,23 @@ public class SpeechWsRecognizer implements SpeechRecognizer {
             @Override
             public void onFailure(WebSocket webSocket, Throwable t, Response response) {
                 isConnect = false;
-                if (t.getMessage() != null && !t.getMessage().equals("Socket closed")) {
-                    ReportService.ifLogMessage(getId(), "onFailure:reconnect,"
-                            + t.getMessage() + t.getLocalizedMessage(), true);
-                }
                 countDownStart("onFailure");
                 countDownStop("onFailure");
                 String trace = Tutils.getStackTrace(t);
-                if (trace != null && StringUtils.contains(trace, "Socket closed")) {
+                if (StringUtils.contains(trace, "Socket closed") || endFlag.get()) {
                     //服务端主动释放连接socket close 直接return
                     return;
                 }
-                ReportService.ifLogMessage(getId(), "onFailure:" + Tutils.getStackTrace(t), true);
-                if (response != null) {
-                    ReportService.ifLogMessage(getId(), "onFailure:" + response.message() + "_"
-                            + t.getMessage(), false);
-                    SpeechRecognitionResponse rs = new SpeechRecognitionResponse();
-                    rs.setCode(AsrConstant.Code.EXCEPTION.getCode());
-                    rs.setMessage(response.message());
-                    rs.setStreamId(asrRequestContent.getStreamId());
-                    rs.setVoiceId(asrRequestContent.getVoiceId());
-                    ReportService.ifLogMessage(getId(), "onFailure", false);
-                    ReportService.report(false, String.valueOf(rs.getCode()), asrConfig, getId(),
-                            asrRequest, rs, asrConfig.getWsUrl(), t.getMessage());
-                    listener.onFail(rs);
-                }
+                ReportService.ifLogMessage(getId(), "onFailure:" + trace, true);
+                SpeechRecognitionResponse rs = new SpeechRecognitionResponse();
+                rs.setCode(AsrConstant.Code.EXCEPTION.getCode());
+                rs.setMessage(trace);
+                rs.setStreamId(asrRequestContent.getStreamId());
+                rs.setVoiceId(asrRequestContent.getVoiceId());
+                ReportService.ifLogMessage(getId(), "onFailure", false);
+                ReportService.report(false, String.valueOf(rs.getCode()), asrConfig, getId(),
+                        asrRequest, rs, asrConfig.getWsUrl(), t.getMessage());
+                listener.onFail(rs);
             }
 
             @SneakyThrows
@@ -362,7 +344,6 @@ public class SpeechWsRecognizer implements SpeechRecognizer {
                         response.setVoiceId(asrRequestContent.getVoiceId());
                         //错误，直接结束
                         endFlag.set(true);
-                        webSocket.cancel();
                         listener.onFail(response);
                     }
                 }
@@ -383,6 +364,16 @@ public class SpeechWsRecognizer implements SpeechRecognizer {
                     webSocket.close(1001, "onOpen");
                 }
                 countDownStart("onOpen");
+                if (listener != null) {
+                    //start
+                    SpeechRecognitionResponse recognitionResponse = new SpeechRecognitionResponse();
+                    recognitionResponse.setCode(0);
+                    recognitionResponse.setStreamId(asrRequestContent.getStreamId());
+                    recognitionResponse.setFinalSpeech(0);
+                    recognitionResponse.setVoiceId(asrRequestContent.getVoiceId());
+                    recognitionResponse.setMessage("success");
+                    listener.onRecognitionStart(recognitionResponse);
+                }
             }
         };
     }

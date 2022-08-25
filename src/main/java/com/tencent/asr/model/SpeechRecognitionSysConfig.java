@@ -19,6 +19,7 @@ package com.tencent.asr.model;
 import com.tencent.asr.constant.AsrConstant;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.http.HttpHost;
 
 @Setter
 @Getter
@@ -123,4 +124,11 @@ public class SpeechRecognitionSysConfig {
      * 创建wsclient 最大等待时间 默认5min
      */
     public static int wsStartMethodWait = 300;
+    public static int wsStopMethodWait = 60;
+
+    /**
+     * flash http代理相关
+     */
+    public static HttpHost httpHostProxy;
+    public static boolean httpUseProxy;
 }

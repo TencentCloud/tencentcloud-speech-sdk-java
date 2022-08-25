@@ -22,24 +22,9 @@ import com.tencent.core.model.ReportInfo;
 import com.tencent.core.model.TConfig;
 import com.tencent.core.utils.JsonUtil;
 import com.tencent.core.utils.Tutils;
-import com.tencentcloudapi.asr.v20190614.AsrClient;
-import com.tencentcloudapi.common.Credential;
-import com.tencentcloudapi.common.exception.TencentCloudSDKException;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
-import net.jodah.expiringmap.ExpirationPolicy;
-import net.jodah.expiringmap.ExpiringMap;
-import org.apache.commons.lang3.StringUtils;
 
 public class ReportService {
-
-    /**
-     * 带过期时间map
-     */
-    private static ExpiringMap<String, String> errorMap = ExpiringMap.builder()
-            .maxSize(200)
-            .expiration(60, TimeUnit.SECONDS)
-            .variableExpiration().expirationPolicy(ExpirationPolicy.CREATED).build();
 
 
     public static void report(Boolean success, String code, TConfig config, String id, Object request,
@@ -49,17 +34,7 @@ public class ReportService {
 
     public static void report(Boolean success, String code, TConfig config, String id, Object request,
             Object response, String url, final String e, long delayTime) {
-        try {
-            if (GlobalConfig.ifOpenStat) {
-                StatService.statAsr(success, code, delayTime);
-                StatService.heartbeat();
-            }
-            if (GlobalConfig.ifOpenReportError && !success) {
-                filterRepeatError(config, id, request, response, url, e, delayTime);
-            }
-        } catch (Exception exception) {
-            // e.printStackTrace();
-        }
+
     }
 
     /**
@@ -74,20 +49,7 @@ public class ReportService {
      */
     public static void filterRepeatError(TConfig config, String id, Object request,
             Object response, String url, final String e, final long delayTime) {
-        //保证线程安全
-        synchronized (ReportService.class) {
-            if (errorMap.containsKey(id)) {
-                return;
-            }
-            errorMap.put(id, String.valueOf(e));
-        }
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                reportError(config, id, request, response, url, e, delayTime);
-            }
-        }).start();
     }
 
     public static void filterRepeatError(TConfig config, String id, Object request,
@@ -127,20 +89,7 @@ public class ReportService {
      * @param data 上报数据
      */
     public static void doReportError(String secretId, String secretKey, String token, String id, Object data) {
-        try {
-            Credential cred;
-            if (StringUtils.isNotEmpty(token)) {
-                cred = new Credential(secretId, secretKey, token);
-            } else {
-                cred = new Credential(secretId, secretKey);
-            }
-            AsrClient client = new AsrClient(cred, GlobalConfig.region);
-            //ReportService.ifLogMessage(id, "Start data reporting:" + JsonUtil.toJson(data), true);
-            String resp = client.call("UploadSDKLog", JsonUtil.toJson(data));
-            //ReportService.ifLogMessage(id, "Error data report result:" + resp, true);
-        } catch (TencentCloudSDKException e) {
-            // e.printStackTrace();
-        }
+
     }
 
 

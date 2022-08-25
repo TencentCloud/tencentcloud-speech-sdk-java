@@ -19,6 +19,9 @@ package com.tencent.asr.service;
 import com.tencent.asr.model.AsrRequestContent;
 import com.tencent.asr.model.SpeechRecognitionSysConfig;
 import com.tencent.core.service.ReportService;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.concurrent.Future;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.config.RequestConfig;
@@ -31,6 +34,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
+import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
 import org.apache.http.impl.nio.client.HttpAsyncClients;
 import org.apache.http.impl.nio.conn.PoolingNHttpClientConnectionManager;
 import org.apache.http.impl.nio.reactor.DefaultConnectingIOReactor;
@@ -38,10 +42,6 @@ import org.apache.http.impl.nio.reactor.IOReactorConfig;
 import org.apache.http.nio.reactor.ConnectingIOReactor;
 import org.apache.http.nio.reactor.IOReactorException;
 import org.apache.http.util.EntityUtils;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.concurrent.Future;
 
 /**
  * HttpClientService
@@ -232,8 +232,11 @@ public class HttpClientService {
      * @return CloseableHttpAsyncClient
      */
     private CloseableHttpAsyncClient createAsyncHttpClient() {
-        return HttpAsyncClients.custom()
-                .setConnectionManager(connManager)
+        HttpAsyncClientBuilder ab = HttpAsyncClients.custom();
+        if (SpeechRecognitionSysConfig.httpUseProxy) {
+            ab.setProxy(SpeechRecognitionSysConfig.httpHostProxy);
+        }
+        return ab.setConnectionManager(connManager)
                 .setDefaultRequestConfig(requestConfig)
                 .build();
     }
@@ -248,8 +251,11 @@ public class HttpClientService {
         cm.setMaxTotal(SpeechRecognitionSysConfig.MaxTotal);
         cm.setDefaultMaxPerRoute(SpeechRecognitionSysConfig.defaultMaxPerRoute);
 
-        RequestConfig requestConfig = RequestConfig.custom()
-                .setConnectTimeout(SpeechRecognitionSysConfig.connectTimeout)
+        RequestConfig.Builder rb = RequestConfig.custom();
+        if (SpeechRecognitionSysConfig.httpUseProxy) {
+            rb.setProxy(SpeechRecognitionSysConfig.httpHostProxy);
+        }
+        RequestConfig requestConfig = rb.setConnectTimeout(SpeechRecognitionSysConfig.connectTimeout)
                 .setSocketTimeout(SpeechRecognitionSysConfig.socketTimeout)
                 .setConnectionRequestTimeout(SpeechRecognitionSysConfig.connectionRequestTimeout)
                 .build();

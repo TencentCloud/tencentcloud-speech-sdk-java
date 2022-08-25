@@ -16,6 +16,9 @@
 
 package com.tencent.tts.model;
 
+import org.apache.http.HttpHost;
+import org.apache.http.impl.client.CloseableHttpClient;
+
 public class SpeechSynthesisSysConfig {
 
     /**
@@ -26,5 +29,16 @@ public class SpeechSynthesisSysConfig {
     /**
      * 对每行文字做分割时的关键字，遇到这里的字符肯定会切分开。
      */
-    public static String[] SEPARATOR_CHARS = new String[] { "。", "！", "？", "!", "?", "." };
+    public static String[] SEPARATOR_CHARS = new String[]{"。", "！", "？", "!", "?", "."};
+
+    /**
+     * 代理
+     */
+    public static HttpHost HostProxy = null;
+    /**
+     * 是否开启代理
+     */
+    public static boolean UseProxy = false;
+
+    public static CloseableHttpClient httpclient = null;
 }

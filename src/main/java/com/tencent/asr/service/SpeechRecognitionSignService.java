@@ -142,6 +142,7 @@ class SpeechRecognitionSignService {
         treeMap.put("convert_num_mode", request.getConvertNumMode());
         treeMap.put("word_info", request.getWordInfo());
         treeMap.put("vad_silence_time", request.getVadSilenceTime());
+        treeMap.put("customization_id", request.getCustomizationId());
         return treeMap;
     }
 
@@ -160,6 +161,7 @@ class SpeechRecognitionSignService {
         treeMap.put("word_info", request.getWordInfo());
         treeMap.put("first_channel_only", request.getFirstChannelOnly());
         treeMap.put("hotword_id", request.getHotWordId());
+        treeMap.put("customization_id", request.getCustomizationId());
         return treeMap;
     }
 }

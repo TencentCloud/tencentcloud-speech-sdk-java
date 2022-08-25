@@ -18,6 +18,9 @@ package com.tencent.asr.service;
 
 import com.tencent.asr.model.SpeechWebsocketConfig;
 import com.tencent.core.model.GlobalConfig;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
+import java.net.Proxy.Type;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -47,30 +50,33 @@ public class WsClientService {
                     Integer.MAX_VALUE, 60, TimeUnit.SECONDS,
                     new SynchronousQueue<Runnable>(), Util.threadFactory("OkHttp Dispatcher", false));
         }
+
+        OkHttpClient.Builder okHttpBuilder = new OkHttpClient.Builder();
+        okHttpBuilder.dispatcher(new Dispatcher(treadPool))
+                .connectionPool(new ConnectionPool(config.getWsMaxIdleConnections(),
+                        config.getWsKeepAliveDuration(), TimeUnit.MILLISECONDS))
+                .writeTimeout(config.getWsWriteTimeOut(), TimeUnit.MILLISECONDS)
+                .readTimeout(config.getWsReadTimeOut(), TimeUnit.MILLISECONDS)
+                .connectTimeout(config.getWsConnectTimeOut(), TimeUnit.MILLISECONDS)
+                .retryOnConnectionFailure(true);
+
         if (GlobalConfig.ifLog) {
             HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
             loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
-            client = new OkHttpClient.Builder()
-                    .dispatcher(new Dispatcher(treadPool))
-                    .connectionPool(new ConnectionPool(config.getWsMaxIdleConnections(),
-                            config.getWsKeepAliveDuration(), TimeUnit.MILLISECONDS))
-                    .writeTimeout(config.getWsWriteTimeOut(), TimeUnit.MILLISECONDS)
-                    .readTimeout(config.getWsReadTimeOut(), TimeUnit.MILLISECONDS)
-                    .connectTimeout(config.getWsConnectTimeOut(), TimeUnit.MILLISECONDS)
-                    .retryOnConnectionFailure(true)
-                    .addInterceptor(loggingInterceptor)
-                    .build();
-        } else {
-            client = new OkHttpClient.Builder()
-                    .dispatcher(new Dispatcher(treadPool))
-                    .connectionPool(new ConnectionPool(config.getWsMaxIdleConnections(),
-                            config.getWsKeepAliveDuration(), TimeUnit.MILLISECONDS))
-                    .writeTimeout(config.getWsWriteTimeOut(), TimeUnit.MILLISECONDS)
-                    .readTimeout(config.getWsReadTimeOut(), TimeUnit.MILLISECONDS)
-                    .connectTimeout(config.getWsConnectTimeOut(), TimeUnit.MILLISECONDS)
-                    .retryOnConnectionFailure(true)
-                    .build();
+            okHttpBuilder.addInterceptor(loggingInterceptor);
         }
+        if (config.getUseProxy() != null && config.getUseProxy()) {
+            if (config.getAuthenticator() != null) {
+                okHttpBuilder.authenticator(config.getAuthenticator());
+            }
+            if (config.getProxySelector() != null) {
+                okHttpBuilder.proxySelector(config.getProxySelector());
+            } else {
+                okHttpBuilder.proxy(new Proxy(Type.HTTP,
+                        new InetSocketAddress(config.getProxyHost(), config.getProxyPort())));
+            }
+        }
+        client = okHttpBuilder.build();
         client.dispatcher().setMaxRequests(config.getWsMaxRequests());
         client.dispatcher().setMaxRequestsPerHost(config.getWsMaxRequestsPerHost());
     }

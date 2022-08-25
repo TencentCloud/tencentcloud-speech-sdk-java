@@ -82,6 +82,11 @@ public class FlashRecognitionRequest extends TRequest {
     private Integer firstChannelOnly;
 
     /**
+     * 自学习模型id
+     */
+    private String customizationId;
+
+    /**
      * 扩展字段
      */
     protected Map<String, Object> extendsParam;

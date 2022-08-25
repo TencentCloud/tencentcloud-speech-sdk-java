@@ -782,6 +782,7 @@ public class HttpBaseService {
         } else {
             speechRecognitionListener.onFail(response);
         }
+        speechRecognitionListener.onMessage(response);
     }
 
     @Setter
