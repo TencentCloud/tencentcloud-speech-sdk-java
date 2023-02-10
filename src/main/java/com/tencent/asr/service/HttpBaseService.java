@@ -18,15 +18,32 @@ package com.tencent.asr.service;
 
 import cn.hutool.core.collection.CollectionUtil;
 import com.tencent.asr.constant.AsrConstant;
-import com.tencent.asr.model.*;
+import com.tencent.asr.model.AsrConfig;
+import com.tencent.asr.model.AsrRequest;
+import com.tencent.asr.model.AsrRequestContent;
+import com.tencent.asr.model.AsrResponse;
+import com.tencent.asr.model.SpeechRecognitionResponse;
+import com.tencent.asr.model.SpeechRecognitionResponseResult;
+import com.tencent.asr.model.SpeechRecognitionSysConfig;
 import com.tencent.asr.utils.AsrUtils;
 import com.tencent.core.handler.BaseEventListener;
 import com.tencent.core.handler.RealTimeEventListener;
+import com.tencent.core.help.SignHelper;
 import com.tencent.core.service.ReportService;
 import com.tencent.core.utils.ByteUtils;
 import com.tencent.core.utils.JsonUtil;
 import com.tencent.core.utils.SignBuilder;
 import com.tencent.core.utils.Tutils;
+import java.io.IOException;
+import java.net.SocketTimeoutException;
+import java.util.List;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -36,13 +53,6 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.concurrent.FutureCallback;
 import org.apache.http.impl.conn.ConnectionShutdownException;
-
-import java.io.IOException;
-import java.net.SocketTimeoutException;
-import java.util.List;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class HttpBaseService {
 
@@ -256,8 +266,12 @@ public class HttpBaseService {
         asrRequest.setTimestamp(System.currentTimeMillis() / 1000);
         asrRequest.setExpired((System.currentTimeMillis() / 1000) + 86400);
         String stamp = content.getStreamId() + "_asr_" + content.getVoiceId() + "_" + content.getSeq();
-        String url = speechRecognitionSignService.signUrl(asrConfig, asrRequest, content);
-        String sign = SignBuilder.createPostSign(url, asrConfig.getSecretKey(), asrRequest);
+        String paramUrl = SignHelper.createUrl(speechRecognitionSignService.getParams(asrConfig,
+                asrRequest, content));
+        String signUrl = "POST" + asrConfig.getSignUrl() + asrConfig.getAppId() + paramUrl;
+        String sign = SignBuilder.base64_hmac_sha1(signUrl, asrConfig.getSecretKey());
+        String url = asrConfig.getRealAsrUrl() + asrConfig.getAppId() + paramUrl;
+
         AsrRequest tempRequest = JsonUtil.fromJson(JsonUtil.toJson(asrRequest), AsrRequest.class);
         httpClientRequest(content, stamp, url, sign, tempRequest);
         return stamp;

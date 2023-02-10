@@ -21,6 +21,7 @@ import com.tencent.asr.model.AsrConfig;
 import com.tencent.asr.model.FlashRecognitionRequest;
 import com.tencent.asr.model.FlashRecognitionResponse;
 import com.tencent.asr.model.SpeechRecognitionSysConfig;
+import com.tencent.core.help.SignHelper;
 import com.tencent.core.service.ReportService;
 import com.tencent.core.utils.JsonUtil;
 import com.tencent.core.utils.SignBuilder;
@@ -85,8 +86,12 @@ public class FlashRecognizer {
             throw new RuntimeException("write data is null!!!");
         }
         request.setTimestamp(System.currentTimeMillis() / 1000);
-        String url = speechRecognitionSignService.signFlashUrl(config.getFlashUrl(), config, request);
-        String sign = SignBuilder.createPostSign(url, config.getSecretKey(), request);
+
+        String paramUrl = SignHelper.createUrl(speechRecognitionSignService.getFlashParams(config, request));
+        String signUrl = "POST"+config.getFlashSignUrl() + config.getAppId() + paramUrl;
+        String sign = SignBuilder.base64_hmac_sha1(signUrl, config.getSecretKey());
+
+        String url = config.getFlashUrl() + config.getAppId() + paramUrl;
         CloseableHttpResponse httpResponse = null;
         try {
             HttpPost httpPost = new HttpPost(url);

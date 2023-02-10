@@ -151,6 +151,12 @@ public class AsrRequest extends TRequest {
      */
     private String customizationId;
 
+    /**
+     * 噪音参数阈值，默认为0，取值范围：[-1,1]，对于一些音频片段，取值越大，判定为噪音情况越大。取值越小，判定为人声情况越大。
+     * 慎用：可能影响识别效果
+     */
+    private Float noiseThreshold;
+
 
     /**
      * 扩展字段

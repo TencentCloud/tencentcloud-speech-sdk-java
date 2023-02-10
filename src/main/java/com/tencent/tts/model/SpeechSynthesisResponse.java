@@ -29,7 +29,7 @@ import lombok.Setter;
 public class SpeechSynthesisResponse extends TResponse {
 
     /**
-     * base64编码的wav/mp3音频数据
+     * wav/mp3音频数据
      */
     private byte[] Audio;
 

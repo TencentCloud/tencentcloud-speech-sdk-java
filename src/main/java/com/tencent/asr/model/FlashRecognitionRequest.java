@@ -87,6 +87,11 @@ public class FlashRecognitionRequest extends TRequest {
     private String customizationId;
 
     /**
+     * 单标点最多字数，取值范围：[6，40]。默认为0，不开启该功能。该参数可用于字幕生成场景，控制单行字幕最大字数。
+     */
+    private Integer sentenceMaxLength;
+
+    /**
      * 扩展字段
      */
     protected Map<String, Object> extendsParam;

@@ -24,6 +24,7 @@ import com.tencent.asr.model.SpeechRecognitionRequest;
 import com.tencent.asr.model.SpeechRecognitionResponse;
 import com.tencent.asr.model.SpeechRecognitionSysConfig;
 import com.tencent.asr.utils.AsrUtils;
+import com.tencent.core.help.SignHelper;
 import com.tencent.core.service.ReportService;
 import com.tencent.core.utils.JsonUtil;
 import com.tencent.core.utils.SignBuilder;
@@ -169,8 +170,12 @@ public class SpeechWsRecognizer implements SpeechRecognizer {
                     ReportService.ifLogMessage(getId(), "create websocket", false);
                     asrRequest.setTimestamp(System.currentTimeMillis() / 1000);
                     asrRequest.setExpired(System.currentTimeMillis() / 1000 + 86400);
-                    String url = speechRecognitionSignService.signWsUrl(asrConfig, asrRequest, asrRequestContent);
-                    String sign = SignBuilder.createGetSign(url, asrConfig.getSecretKey(), asrRequest);
+
+                    String paramUrl = SignHelper.createUrl(speechRecognitionSignService.getWsParams(asrConfig,
+                            asrRequest, asrRequestContent));
+                    String signUrl = asrConfig.getWsSignUrl() + asrConfig.getAppId() + paramUrl;
+                    String sign = SignBuilder.base64_hmac_sha1(signUrl, asrConfig.getSecretKey());
+                    String url = asrConfig.getWsUrl() + asrConfig.getAppId() + paramUrl;
                     WebSocketListener webSocketListener = createWebSocketListener();
                     webSocket = wsClientService.asrWebSocket(asrConfig.getToken(), url, sign, webSocketListener);
                     isConnect = true;

@@ -259,7 +259,7 @@ public class HttpClientService {
                 .setSocketTimeout(SpeechRecognitionSysConfig.socketTimeout)
                 .setConnectionRequestTimeout(SpeechRecognitionSysConfig.connectionRequestTimeout)
                 .build();
-        return HttpClients.custom().setConnectionManager(cm)
+        return HttpClients.custom().setConnectionManager(cm).setConnectionManagerShared(true)
                 .setDefaultRequestConfig(requestConfig).build();
     }
 }

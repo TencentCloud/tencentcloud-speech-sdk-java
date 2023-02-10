@@ -51,7 +51,7 @@ public class SpeechSynthesisConfig extends TConfig {
                                  String ttsUrl, String signUrl, String logUrl,String token) {
         super(secretId, secretKey, appId,token);
         this.ttsUrl = Optional.ofNullable(ttsUrl).orElse("https://tts.cloud.tencent.com/stream");
-        this.signUrl = Optional.ofNullable(signUrl).orElse("https://tts.cloud.tencent.com/stream");
+        this.signUrl = Optional.ofNullable(signUrl).orElse("POSTtts.cloud.tencent.com/stream");
         this.logUrl = Optional.ofNullable(logUrl).orElse("https://asr.tencentcloudapi.com/");
         this.action="TextToStreamAudio";
     }

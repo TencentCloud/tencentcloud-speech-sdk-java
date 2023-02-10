@@ -21,11 +21,13 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.util.Optional;
+import lombok.Setter;
 
 /**
  * 全局配置
  */
 @Getter
+@Setter
 public class AsrConfig extends TConfig {
 
     private AsrConfig() {
@@ -51,26 +53,38 @@ public class AsrConfig extends TConfig {
     private String logUrl;
 
     /**
-     * ws地址
+     * ws签名地址
      */
     private String wsUrl;
+
+    /**
+     * ws地址
+     */
+    private String wsSignUrl;
 
     /**
      * 极速版地址
      */
     private String flashUrl;
 
+    /**
+     * 极速版签名地址
+     */
+    private String flashSignUrl;
+
 
     @Builder
     public AsrConfig(String appId, String secretKey, String secretId,
-                     Long waitTime, String realAsrUrl, String signUrl,
-                     String logUrl, String wsUrl, String token) {
+            Long waitTime, String realAsrUrl, String signUrl,
+            String logUrl, String wsUrl, String token) {
         super(secretId, secretKey, Long.valueOf(appId), token);
         this.realAsrUrl = Optional.ofNullable(realAsrUrl).orElse("https://asr.cloud.tencent.com/asr/v1/");
-        this.signUrl = Optional.ofNullable(signUrl).orElse("https://asr.cloud.tencent.com/asr/v1/");
+        this.signUrl = Optional.ofNullable(signUrl).orElse("asr.cloud.tencent.com/asr/v1/");
         this.logUrl = Optional.ofNullable(logUrl).orElse("https://asr.tencentcloudapi.com/");
         this.wsUrl = Optional.ofNullable(wsUrl).orElse("wss://asr.cloud.tencent.com/asr/v2/");
-        this.flashUrl = Optional.ofNullable(flashUrl).orElse("https://asr.cloud.tencent.com/asr/flash/v1/");
+        this.wsSignUrl = "asr.cloud.tencent.com/asr/v2/";
+        this.flashUrl = "https://asr.cloud.tencent.com/asr/flash/v1/";
+        this.flashSignUrl = "asr.cloud.tencent.com/asr/flash/v1/";
         this.waitTime = Optional.ofNullable(waitTime).orElse(6 * 1000L);
     }
 }

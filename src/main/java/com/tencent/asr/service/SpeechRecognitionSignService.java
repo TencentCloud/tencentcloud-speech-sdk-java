@@ -29,12 +29,12 @@ class SpeechRecognitionSignService {
 
     public String signUrl(AsrConfig asrConfig, AsrRequest request, AsrRequestContent content) {
         String paramUrl = SignHelper.createUrl(getParams(asrConfig, request, content));
-        return asrConfig.getRealAsrUrl() + asrConfig.getAppId() + paramUrl;
+        return asrConfig.getSignUrl() + asrConfig.getAppId() + paramUrl;
     }
 
     public String signWsUrl(AsrConfig asrConfig, AsrRequest request, AsrRequestContent content) {
         String paramUrl = SignHelper.createUrl(getWsParams(asrConfig, request, content));
-        return asrConfig.getWsUrl() + asrConfig.getAppId() + paramUrl;
+        return asrConfig.getWsSignUrl() + asrConfig.getAppId() + paramUrl;
     }
 
     public String signFlashUrl(String url, AsrConfig asrConfig, FlashRecognitionRequest request) {
@@ -49,7 +49,7 @@ class SpeechRecognitionSignService {
      * @param request
      * @return
      */
-    private Map<String, Object> getFlashParams(AsrConfig asrConfig, FlashRecognitionRequest request) {
+    public  Map<String, Object> getFlashParams(AsrConfig asrConfig, FlashRecognitionRequest request) {
         TMap<String, Object> treeMap = getFlashRequestParamMap(asrConfig, request);
         if (request.getExtendsParam() != null) {
             for (Map.Entry<String, Object> entry : request.getExtendsParam().entrySet()) {
@@ -68,7 +68,7 @@ class SpeechRecognitionSignService {
      * @param content
      * @return
      */
-    private TreeMap<String, Object> getParams(AsrConfig asrConfig, AsrRequest request,
+    public TreeMap<String, Object> getParams(AsrConfig asrConfig, AsrRequest request,
                                               AsrRequestContent content) {
         TMap<String, Object> treeMap = getRequestParamMap(asrConfig, request, content);
 
@@ -91,7 +91,7 @@ class SpeechRecognitionSignService {
      * @param content
      * @return
      */
-    private TreeMap<String, Object> getWsParams(AsrConfig asrConfig, AsrRequest request,
+    public TreeMap<String, Object> getWsParams(AsrConfig asrConfig, AsrRequest request,
                                                 AsrRequestContent content) {
         TMap<String, Object> treeMap = getRequestParamMap(asrConfig, request, content);
         if (request.getExtendsParam() != null) {
@@ -143,10 +143,11 @@ class SpeechRecognitionSignService {
         treeMap.put("word_info", request.getWordInfo());
         treeMap.put("vad_silence_time", request.getVadSilenceTime());
         treeMap.put("customization_id", request.getCustomizationId());
+        treeMap.put("noise_threshold", request.getNoiseThreshold());
         return treeMap;
     }
 
-    private TMap<String, Object> getFlashRequestParamMap(AsrConfig asrConfig,
+    private  TMap<String, Object> getFlashRequestParamMap(AsrConfig asrConfig,
                                                          FlashRecognitionRequest request) {
         TMap<String, Object> treeMap = new TMap<String, Object>();
         treeMap.put("secretid", asrConfig.getSecretId());
@@ -162,6 +163,7 @@ class SpeechRecognitionSignService {
         treeMap.put("first_channel_only", request.getFirstChannelOnly());
         treeMap.put("hotword_id", request.getHotWordId());
         treeMap.put("customization_id", request.getCustomizationId());
+        treeMap.put("sentence_max_length", request.getSentenceMaxLength());
         return treeMap;
     }
 }

@@ -19,6 +19,7 @@ package com.tencent.tts.service;
 import cn.hutool.core.util.RandomUtil;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.tencent.core.help.SignHelper;
 import com.tencent.core.service.ReportService;
 import com.tencent.core.utils.ByteUtils;
 import com.tencent.core.utils.JsonUtil;
@@ -39,11 +40,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 
 public class SpeechSynthesizer {
 
@@ -106,11 +109,24 @@ public class SpeechSynthesizer {
 
     public void initClient() {
         if (SpeechSynthesisSysConfig.httpclient == null) {
-            HttpClientBuilder hb = HttpClientBuilder.create();
-            if (SpeechSynthesisSysConfig.UseProxy) {
-                hb.setProxy(SpeechSynthesisSysConfig.HostProxy);
+            synchronized (SpeechSynthesizer.class) {
+                if (SpeechSynthesisSysConfig.httpclient == null) {
+                    PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
+                    cm.setMaxTotal(500);
+                    cm.setDefaultMaxPerRoute(250);
+                    RequestConfig.Builder rb = RequestConfig.custom();
+                    if (SpeechSynthesisSysConfig.UseProxy) {
+                        rb.setProxy(SpeechSynthesisSysConfig.HostProxy);
+                    }
+                    RequestConfig requestConfig = rb.setConnectTimeout(1000)
+                            .setSocketTimeout(30000)
+                            .setConnectionRequestTimeout(1500)
+                            .build();
+                    this.httpclient = HttpClients.custom().setConnectionManager(cm)
+                            .setConnectionManagerShared(true)
+                            .setDefaultRequestConfig(requestConfig).build();
+                }
             }
-            this.httpclient = hb.build();
         } else {
             this.httpclient = SpeechSynthesisSysConfig.httpclient;
         }
@@ -238,8 +254,10 @@ public class SpeechSynthesizer {
         speechSynthesisRequest.setExpired(speechSynthesisRequest.getTimestamp() + 86400);
         TreeMap<String, Object> map = SpeechSynthesisSignService.getParams(speechSynthesisConfig,
                 speechSynthesisRequest, content);
-        String url = speechSynthesisSignService.signUrl(speechSynthesisConfig, speechSynthesisRequest, content, map);
-        String sign = SignBuilder.createPostSign(url, speechSynthesisConfig.getSecretKey(), speechSynthesisRequest);
+
+        String paramUrl = SignHelper.createUrl(map);
+        String signUrl= speechSynthesisConfig.getSignUrl() + paramUrl;
+        String sign = SignBuilder.base64_hmac_sha1(signUrl,speechSynthesisConfig.getSecretKey() );
 
         try {
             HttpPost httpPost = new HttpPost(speechSynthesisConfig.getTtsUrl());
@@ -247,7 +265,7 @@ public class SpeechSynthesizer {
             httpPost.addHeader("Content-Type", "application/json");
             HttpEntity httpEntity = new ByteArrayEntity(JsonUtil.toJson(map).getBytes(Charset.forName("utf-8")));
             httpPost.setEntity(httpEntity);
-            ReportService.ifLogMessage("tt request:", url, false);
+            ReportService.ifLogMessage("tt request:", signUrl, false);
             time = System.currentTimeMillis();
             CloseableHttpResponse response = httpclient.execute(httpPost);
             try {
