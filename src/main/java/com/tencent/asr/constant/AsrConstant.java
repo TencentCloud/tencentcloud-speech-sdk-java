@@ -198,7 +198,10 @@ public class AsrConstant {
         CODE_10002(10002, "请调用start方法开始创建链接"),
         CODE_10003(10003, "写入失败，由于失败（onFail）或者已调用stop方法"),
         CODE_10004(10004, "连接关闭"),
-        CODE_10009(10009, "secretId 或 secretKey 为空");
+        CODE_10009(10009, "secretId 或 secretKey 为空"),
+        CODE_10010(10010, "参数错误"),
+        CODE_10011(10011, "回调异常"),
+        CODE_10012(10012, "请求失败");
 
         Code(Integer code, String message) {
             this.code = code;

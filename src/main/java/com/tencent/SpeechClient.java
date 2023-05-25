@@ -16,6 +16,8 @@
 
 package com.tencent;
 
+import static com.tencent.asr.constant.AsrConstant.Code.CODE_10010;
+
 import cn.hutool.core.util.RandomUtil;
 import com.tencent.asr.constant.AsrConstant;
 import com.tencent.asr.constant.AsrConstant.RequestWay;
@@ -24,14 +26,19 @@ import com.tencent.asr.model.Credential;
 import com.tencent.asr.model.SpeechRecognitionRequest;
 import com.tencent.asr.model.SpeechRecognitionSysConfig;
 import com.tencent.asr.model.SpeechWebsocketConfig;
+import com.tencent.asr.model.VirtualNumberRequest;
+import com.tencent.asr.model.VirtualNumberServerConfig;
 import com.tencent.asr.service.FlashRecognizer;
 import com.tencent.asr.service.SdkRunException;
 import com.tencent.asr.service.SpeechHttpRecognizer;
 import com.tencent.asr.service.SpeechRecognitionListener;
 import com.tencent.asr.service.SpeechRecognizer;
 import com.tencent.asr.service.SpeechWsRecognizer;
+import com.tencent.asr.service.VirtualNumberRecognitionListener;
+import com.tencent.asr.service.VirtualNumberRecognizer;
 import com.tencent.asr.service.WsClientService;
 import com.tencent.core.model.GlobalConfig;
+import com.tencent.core.service.ReportService;
 import com.tencent.core.service.StatService;
 import com.tencent.tts.model.SpeechSynthesisConfig;
 import com.tencent.tts.model.SpeechSynthesisRequest;
@@ -226,5 +233,32 @@ public class SpeechClient {
                 .token(credential.getToken())
                 .build();
         return new FlashRecognizer(config);
+    }
+
+
+    /**
+     * newVirtualNumberRecognizer
+     *
+     * @param request
+     * @param listener
+     * @return
+     */
+    public static VirtualNumberRecognizer newVirtualNumberRecognizer(VirtualNumberRequest request,
+            VirtualNumberRecognitionListener listener) {
+        return newVirtualNumberRecognizer(VirtualNumberServerConfig.InitVirtualNumberServerConfig(), request, listener);
+    }
+
+    public static VirtualNumberRecognizer newVirtualNumberRecognizer(VirtualNumberServerConfig config,
+            VirtualNumberRequest request,
+            VirtualNumberRecognitionListener listener) {
+        if (config == null || request == null || listener == null) {
+            ReportService.ifLogMessage("", "Please check config or request or listener,maybe null ", false);
+            throw new SdkRunException(CODE_10010);
+        }
+        if (request.getAppId() == null || request.getSecretId() == null || request.getSecretKey() == null) {
+            ReportService.ifLogMessage("", "Please check appid or secretid or secretkey,maybe null ", false);
+            throw new SdkRunException(CODE_10010);
+        }
+        return new VirtualNumberRecognizer(config, request, listener);
     }
 }

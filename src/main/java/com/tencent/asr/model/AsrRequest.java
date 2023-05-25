@@ -157,6 +157,25 @@ public class AsrRequest extends TRequest {
      */
     private Float noiseThreshold;
 
+    /**
+     * 热词增强功能。默认为0，0：不开启，1：开启。
+     * 开启后（仅支持8k_zh，16k_zh），将开启同音替换功能，同音字、词在热词中配置。
+     * 举例：热词配置“蜜制”并开启增强功能后，与“蜜制”同拼音（mizhi）的“秘制”、“蜜汁”等的识别结果会被强制替换成“蜜制”。因此建议客户根据自己的实际情况开启该功能。
+     */
+    private Integer reinforceHotword;
+
+
+    /**
+     * 临时热词表，该参数用于提升热词识别准确率。
+     * 单个热词规则："热词|权重"，不超过30个字符（最多10个汉字），权重1-10；
+     * 临时热词表限制：多个热词用英文逗号分割，最多128个热词，参数示例："腾讯云|10,语音识别|5,ASR|10"；
+     * 参数 hotword_list 与 hotword_id 区别：
+     * hotword_id：需要先在控制台或接口创建热词表，获得对应hotword_id传入参数来使用热词功能；
+     * hotword_list：每次请求时直接传入临时热词表来使用热词功能，云端不保留临时热词表；
+     * 注意：如果同时传入了 hotword_id 和 hotword_list，会优先使用 hotword_list。
+     */
+    private String hotwordList;
+
 
     /**
      * 扩展字段

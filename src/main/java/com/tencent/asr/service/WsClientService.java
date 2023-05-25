@@ -71,7 +71,7 @@ public class WsClientService {
             }
             if (config.getProxySelector() != null) {
                 okHttpBuilder.proxySelector(config.getProxySelector());
-            } else {
+            } else if (config.getProxyHost() != null && config.getProxyPort() != null) {
                 okHttpBuilder.proxy(new Proxy(Type.HTTP,
                         new InetSocketAddress(config.getProxyHost(), config.getProxyPort())));
             }

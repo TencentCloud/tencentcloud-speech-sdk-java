@@ -62,6 +62,12 @@ public class SdkRunException extends RuntimeException {
         this.message = message;
     }
 
+    public SdkRunException(Throwable cause, AsrConstant.Code code) {
+        super(cause);
+        this.code = code.getCode();
+        this.message = code.getMessage();
+    }
+
     public SdkRunException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace,
             int code,
             String message1) {

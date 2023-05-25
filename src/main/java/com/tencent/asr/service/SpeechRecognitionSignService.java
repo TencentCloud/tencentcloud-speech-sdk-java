@@ -144,6 +144,8 @@ class SpeechRecognitionSignService {
         treeMap.put("vad_silence_time", request.getVadSilenceTime());
         treeMap.put("customization_id", request.getCustomizationId());
         treeMap.put("noise_threshold", request.getNoiseThreshold());
+        treeMap.put("hotword_list", request.getHotwordList());
+        treeMap.put("reinforce_hotword", request.getReinforceHotword());
         return treeMap;
     }
 
@@ -164,6 +166,8 @@ class SpeechRecognitionSignService {
         treeMap.put("hotword_id", request.getHotWordId());
         treeMap.put("customization_id", request.getCustomizationId());
         treeMap.put("sentence_max_length", request.getSentenceMaxLength());
+        treeMap.put("hotword_list", request.getHotwordList());
+        treeMap.put("reinforce_hotword", request.getReinforceHotword());
         return treeMap;
     }
 }
