@@ -247,8 +247,8 @@ public class VirtualNumberServerConfig {
      */
     public static VirtualNumberServerConfig InitVirtualNumberServerConfig() {
         VirtualNumberServerConfig config = new VirtualNumberServerConfig();
-        config.setOnopenWaitTime(60);
-        config.setCloseWaitTime(60);
+        config.setOnopenWaitTime(1);
+        config.setCloseWaitTime(1);
         config.setRetryRequestNum(3);
         config.setMaxIdlConnections(600);
         config.setKeepAliveDuration(300000);

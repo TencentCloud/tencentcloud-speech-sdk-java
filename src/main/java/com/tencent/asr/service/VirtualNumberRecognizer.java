@@ -1,7 +1,6 @@
 package com.tencent.asr.service;
 
 import cn.hutool.core.map.MapUtil;
-import cn.hutool.core.util.RandomUtil;
 import com.tencent.asr.constant.AsrConstant;
 import com.tencent.asr.constant.AsrConstant.Code;
 import com.tencent.asr.model.VirtualNumberRequest;
@@ -175,6 +174,7 @@ public class VirtualNumberRecognizer {
                         errWs.set(true);
                         endWs.set(true);
                         listener.onFail(response);
+                        closeWait.countDown();
                     }
                     if (onopenWait.getCount() > 0) {
                         onopenWait.countDown();
@@ -184,11 +184,11 @@ public class VirtualNumberRecognizer {
                         if (finalTag) {
                             endWs.set(true);
                             listener.onRecognitionComplete(response);
+                            closeWait.countDown();
                         } else {
                             listener.onRecognitionStart(response);
                         }
                     }
-                    closeWait.countDown();
                 }
             }
 
