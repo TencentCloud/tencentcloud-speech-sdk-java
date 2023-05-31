@@ -97,7 +97,7 @@ public class VirtualNumberRecognizer {
                     .concat(request.getAppId().toString()).concat(paramUrl);
             WebSocketListener webSocketListener = createWebSocketListener();
             Headers.Builder builder = new Headers.Builder()
-                    .add("Host", serverConfig.getHost()).add("User-Agent", AsrConstant.SDK);;
+                    .add("Host", serverConfig.getHost()).add("User-Agent", AsrConstant.SDK);
             //.add("Authorization", sign)
             if (StringUtils.isNotEmpty(request.getToken())) {
                 builder.add("X-TC-Token", request.getToken());
@@ -304,6 +304,7 @@ public class VirtualNumberRecognizer {
         queryMap.put("nonce", System.currentTimeMillis());
         queryMap.put("voice_id", request.getVoiceId());
         queryMap.put("voice_format", request.getVoiceFormat());
+        queryMap.put("wait_time", request.getWaitTime());
         if (request.getExtendsParam() != null) {
             for (Map.Entry<String, Object> entry : request.getExtendsParam().entrySet()) {
                 queryMap.put(entry.getKey(), entry.getValue());
