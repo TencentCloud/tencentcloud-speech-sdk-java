@@ -42,9 +42,22 @@ public class VirtualNumberRequest {
     private String Token;
 
     /**
+     * 等待时长 填0 后台默认30秒 最大60秒 单位秒
+     */
+    private Integer WaitTime;
+
+    /**
      * 扩展字段
      */
     protected Map<String, Object> extendsParam;
+
+    public Integer getWaitTime() {
+        return WaitTime;
+    }
+
+    public void setWaitTime(Integer waitTime) {
+        WaitTime = waitTime;
+    }
 
     public Integer getVoiceFormat() {
         return VoiceFormat;

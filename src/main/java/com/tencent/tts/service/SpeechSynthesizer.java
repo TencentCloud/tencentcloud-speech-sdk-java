@@ -107,6 +107,9 @@ public class SpeechSynthesizer {
         initClient();
     }
 
+    /**
+     * initClient 初始化client
+     */
     public void initClient() {
         if (SpeechSynthesisSysConfig.httpclient == null) {
             synchronized (SpeechSynthesizer.class) {
@@ -256,8 +259,8 @@ public class SpeechSynthesizer {
                 speechSynthesisRequest, content);
 
         String paramUrl = SignHelper.createUrl(map);
-        String signUrl= speechSynthesisConfig.getSignUrl() + paramUrl;
-        String sign = SignBuilder.base64_hmac_sha1(signUrl,speechSynthesisConfig.getSecretKey() );
+        String signUrl = speechSynthesisConfig.getSignUrl() + paramUrl;
+        String sign = SignBuilder.base64_hmac_sha1(signUrl, speechSynthesisConfig.getSecretKey());
 
         try {
             HttpPost httpPost = new HttpPost(speechSynthesisConfig.getTtsUrl());

@@ -20,10 +20,10 @@ import okhttp3.logging.HttpLoggingInterceptor;
  */
 public class VirtualNumberServerConfig {
 
-    private String SignPrefixUrl = "asr.cloud.tencent.com/asr/virtual_number/v1/";
-    private String Host = "asr.cloud.tencent.com";
-    private String HostSuffix = "/asr/virtual_number/v1/";
-    private String Proto = "wss";
+    private String signPrefixUrl = "asr.cloud.tencent.com/asr/virtual_number/v1/";
+    private String host = "asr.cloud.tencent.com";
+    private String hostSuffix = "/asr/virtual_number/v1/";
+    private String proto = "wss";
 
     /**
      * OkHttpClient
@@ -68,36 +68,44 @@ public class VirtualNumberServerConfig {
 
     private int maxRequestsPerHost;
 
-    public String getHostSuffix() {
-        return HostSuffix;
-    }
-
-    public void setHostSuffix(String hostSuffix) {
-        HostSuffix = hostSuffix;
-    }
-
     public String getSignPrefixUrl() {
-        return SignPrefixUrl;
+        return signPrefixUrl;
     }
 
     public void setSignPrefixUrl(String signPrefixUrl) {
-        SignPrefixUrl = signPrefixUrl;
+        this.signPrefixUrl = signPrefixUrl;
     }
 
     public String getHost() {
-        return Host;
+        return host;
     }
 
     public void setHost(String host) {
-        Host = host;
+        this.host = host;
+    }
+
+    public String getHostSuffix() {
+        return hostSuffix;
+    }
+
+    public void setHostSuffix(String hostSuffix) {
+        this.hostSuffix = hostSuffix;
     }
 
     public String getProto() {
-        return Proto;
+        return proto;
     }
 
     public void setProto(String proto) {
-        Proto = proto;
+        this.proto = proto;
+    }
+
+    public static VirtualNumberServerConfig getConfig() {
+        return config;
+    }
+
+    public static void setConfig(VirtualNumberServerConfig config) {
+        VirtualNumberServerConfig.config = config;
     }
 
     public OkHttpClient getClient() {
@@ -212,6 +220,11 @@ public class VirtualNumberServerConfig {
         this.maxRequestsPerHost = maxRequestsPerHost;
     }
 
+
+    /**
+     * initOkHttp
+     * @return OkHttpClient
+     */
     public OkHttpClient initOkHttp() {
         ExecutorService treadPool = treadPool = new ThreadPoolExecutor(10,
                 Integer.MAX_VALUE, 60, TimeUnit.SECONDS,

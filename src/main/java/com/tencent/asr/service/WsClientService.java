@@ -16,6 +16,7 @@
 
 package com.tencent.asr.service;
 
+import com.tencent.asr.constant.AsrConstant;
 import com.tencent.asr.model.SpeechWebsocketConfig;
 import com.tencent.core.model.GlobalConfig;
 import java.net.InetSocketAddress;
@@ -83,7 +84,7 @@ public class WsClientService {
 
     public WebSocket asrWebSocket(String token, String wsUrl, String sign, WebSocketListener listener) {
         Headers.Builder builder = new Headers.Builder().add("Authorization", sign)
-                .add("Host", "asr.cloud.tencent.com");
+                .add("Host", "asr.cloud.tencent.com").add("User-Agent", AsrConstant.SDK);
         if (StringUtils.isNotEmpty(token)) {
             builder.add("X-TC-Token", token);
         }

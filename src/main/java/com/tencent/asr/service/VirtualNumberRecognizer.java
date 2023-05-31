@@ -1,3 +1,19 @@
+/*
+ * Copyright (c) 2017-2018 THL A29 Limited, a Tencent company. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.tencent.asr.service;
 
 import cn.hutool.core.map.MapUtil;
@@ -18,6 +34,7 @@ import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+
 import okhttp3.Headers;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -39,6 +56,7 @@ public class VirtualNumberRecognizer {
         this.serverConfig = serverConfig;
         this.request = request;
         this.listener = listener;
+
     }
 
     private WebSocket webSocket;
@@ -46,12 +64,18 @@ public class VirtualNumberRecognizer {
     private final String wsId = UUID.randomUUID().toString();
     //startWs 开启标志
     private AtomicBoolean startWs = new AtomicBoolean(false);
+    //endWs 结束 可能出现错误(code!=0 or onFailed) 或者 收到尾包
     private AtomicBoolean endWs = new AtomicBoolean(false);
+    //finalWs 标志 收到尾包 final=1
+    private AtomicBoolean finalWs = new AtomicBoolean(false);
+    //errWs  标志错误(code!=0 or onFailed )
     private AtomicBoolean errWs = new AtomicBoolean(false);
     private final CountDownLatch onopenWait = new CountDownLatch(1);
     private final CountDownLatch closeWait = new CountDownLatch(1);
 
-
+    /**
+     * start 开启
+     */
     public void start() {
         try {
             if (serverConfig == null || listener == null || request == null) {
@@ -68,12 +92,12 @@ public class VirtualNumberRecognizer {
             String sign = SignBuilder.base64_hmac_sha1(signUrl, request.getSecretKey());
             String paramUrl = suffix.concat("&signature=").concat(URLEncoder.encode(sign, "UTF-8"));
 
-            String url = serverConfig.getProto().concat("://").concat(serverConfig.getHost())
+            final String url = serverConfig.getProto().concat("://").concat(serverConfig.getHost())
                     .concat(serverConfig.getHostSuffix())
                     .concat(request.getAppId().toString()).concat(paramUrl);
             WebSocketListener webSocketListener = createWebSocketListener();
             Headers.Builder builder = new Headers.Builder()
-                    .add("Host", serverConfig.getHost());
+                    .add("Host", serverConfig.getHost()).add("User-Agent", AsrConstant.SDK);;
             //.add("Authorization", sign)
             if (StringUtils.isNotEmpty(request.getToken())) {
                 builder.add("X-TC-Token", request.getToken());
@@ -111,17 +135,18 @@ public class VirtualNumberRecognizer {
         return new WebSocketListener() {
             @Override
             public void onClosed(WebSocket webSocket, int code, String reason) {
-                ReportService.ifLogMessage(wsId, "ws onClosed" + reason, false);
+                ReportService.ifLogMessage(wsId, "ws onClosed:" + code + " reason:" + reason, false);
             }
 
             @Override
             public void onClosing(WebSocket webSocket, int code, String reason) {
                 super.onClosing(webSocket, code, reason);
-                ReportService.ifLogMessage(wsId, "ws onClosing", false);
+                ReportService.ifLogMessage(wsId, "ws onClosing:" + code + " reason:" + reason, false);
             }
 
             @Override
             public void onFailure(WebSocket webSocket, Throwable t, Response response) {
+                ReportService.ifLogMessage(wsId, "now process", false);
                 boolean callback = false;
                 VirtualNumberResponse virtualNumberResponse = new VirtualNumberResponse();
                 try {
@@ -183,8 +208,10 @@ public class VirtualNumberRecognizer {
                     if (success) {
                         if (finalTag) {
                             endWs.set(true);
-                            listener.onRecognitionComplete(response);
+                            finalWs.set(true);
                             closeWait.countDown();
+                            ReportService.ifLogMessage(wsId, "closeWait countDown", false);
+                            listener.onRecognitionComplete(response);
                         } else {
                             listener.onRecognitionStart(response);
                         }
@@ -223,8 +250,16 @@ public class VirtualNumberRecognizer {
 
     public Boolean stop() {
         try {
-            webSocket.send(JsonUtil.toJson(MapUtil.builder().put("type", "end").build()));
+            if (!finalWs.get()) {
+                ReportService.ifLogMessage(wsId, "send end package", false);
+                webSocket.send(JsonUtil.toJson(MapUtil.builder().put("type", "end").build()));
+            }
             closeWait.await(serverConfig.getCloseWaitTime(), TimeUnit.SECONDS);
+            ReportService.ifLogMessage(wsId, "websocket close", false);
+            boolean closed = webSocket.close(1000, "success");
+            if (!closed) {
+                ReportService.ifLogMessage(wsId, "websocket closed", false);
+            }
         } catch (InterruptedException e) {
             ReportService.ifLogMessage(wsId, "stop_exception:" + e.getMessage(), false);
             throw new SdkRunException(e.getCause(), AsrConstant.Code.CODE_10004);
@@ -232,7 +267,11 @@ public class VirtualNumberRecognizer {
         return true;
     }
 
-    public void write(byte[] data) {
+    public boolean write(byte[] data) {
+        if (finalWs.get()) {
+            //收到结果则直接返回
+            return true;
+        }
         if (endWs.get()) {
             ReportService.ifLogMessage(wsId, "has ended stop sending", true);
             throw new SdkRunException(Code.CODE_10003);
@@ -249,6 +288,7 @@ public class VirtualNumberRecognizer {
                 }
             }
         }
+        return false;
     }
 
     /**

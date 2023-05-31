@@ -18,6 +18,8 @@ package com.tencent.asr.constant;
 
 public class AsrConstant {
 
+    public static String SDK = "JAVA_1.0.26";
+
     /**
      * 语音识别的方式
      * http:采用http协议进行语音识别

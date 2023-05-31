@@ -110,7 +110,7 @@ public class PcmUtils {
      * @param bitNum     采样位数，8或16
      */
 
-    public static void Pcm2WavBytes(byte[] pcm, byte[] wav, int sampleRate, int channels, int bitNum) {
+    public static void pcm2WavBytes(byte[] pcm, byte[] wav, int sampleRate, int channels, int bitNum) {
         pcm2Wav(pcm, wav, sampleRate, channels, bitNum);
     }
 

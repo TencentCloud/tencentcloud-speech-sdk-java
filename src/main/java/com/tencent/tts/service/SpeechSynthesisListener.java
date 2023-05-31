@@ -21,6 +21,7 @@ import com.tencent.tts.model.SpeechSynthesisResponse;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class SpeechSynthesisListener {
+
     /**
      * 是否取消
      */
@@ -42,9 +43,11 @@ public abstract class SpeechSynthesisListener {
     }
 
     //是否取消请求
-    protected boolean ifCancel(){return ifCancel.get();}
+    protected boolean ifCancel() {
+        return ifCancel.get();
+    }
 
-    protected void  setIfCancel(boolean cancel){
+    protected void setIfCancel(boolean cancel) {
         ifCancel.set(cancel);
     }
 }

@@ -26,6 +26,7 @@ import java.util.Optional;
 @Setter
 @Getter
 public class SpeechSynthesisConfig extends TConfig {
+
     /**
      * 是本接口取值：TextToStreamAudio，不可更改。
      */
@@ -48,11 +49,11 @@ public class SpeechSynthesisConfig extends TConfig {
 
     @Builder
     public SpeechSynthesisConfig(Long appId, String secretKey, String secretId,
-                                 String ttsUrl, String signUrl, String logUrl,String token) {
-        super(secretId, secretKey, appId,token);
+            String ttsUrl, String signUrl, String logUrl, String token) {
+        super(secretId, secretKey, appId, token);
         this.ttsUrl = Optional.ofNullable(ttsUrl).orElse("https://tts.cloud.tencent.com/stream");
         this.signUrl = Optional.ofNullable(signUrl).orElse("POSTtts.cloud.tencent.com/stream");
         this.logUrl = Optional.ofNullable(logUrl).orElse("https://asr.tencentcloudapi.com/");
-        this.action="TextToStreamAudio";
+        this.action = "TextToStreamAudio";
     }
 }

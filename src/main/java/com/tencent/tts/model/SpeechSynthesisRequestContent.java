@@ -26,7 +26,7 @@ import lombok.Setter;
 public class SpeechSynthesisRequestContent {
 
     /**
-     * 是	String	合成语音的源文本。中文最大支持600个汉字（全角标点符号算一个汉字），英文最大支持1800个字母（半角标点符号算一个字母）。包含空格等字符时需要 URL encode 再传输。
+     * 合成语音的源文本。中文最大支持600个汉字（全角标点符号算一个汉字），英文最大支持1800个字母（半角标点符号算一个字母）。包含空格等字符时需要 URL encode 再传输。
      */
     private String text;
 

@@ -53,7 +53,7 @@ public class Ttsutils {
             //wav大小为pcm字节+44wav头大小
             byte[] wav = new byte[44 + rspLen];
             int bitNum = sampleRate == 16000 ? 16 : 8;
-            PcmUtils.Pcm2WavBytes(response, wav, sampleRate, 1, bitNum);
+            PcmUtils.pcm2WavBytes(response, wav, sampleRate, 1, bitNum);
 
             File wavFile = new File(sessionId + ".wav");
             saveWavFile(wav, wavFile);

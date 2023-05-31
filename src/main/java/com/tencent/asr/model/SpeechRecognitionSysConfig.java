@@ -121,10 +121,10 @@ public class SpeechRecognitionSysConfig {
     public static int wsMaxRequestsPerHost = 5;
 
     /**
-     * 创建wsclient 最大等待时间 默认5min
+     * 创建wsclient 最大等待时间 默认3s
      */
-    public static int wsStartMethodWait = 300;
-    public static int wsStopMethodWait = 60;
+    public static int wsStartMethodWait = 3;
+    public static int wsStopMethodWait = 2;
 
     /**
      * flash http代理相关
