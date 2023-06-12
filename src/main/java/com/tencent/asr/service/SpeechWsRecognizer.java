@@ -25,6 +25,7 @@ import com.tencent.asr.model.SpeechRecognitionResponse;
 import com.tencent.asr.model.SpeechRecognitionSysConfig;
 import com.tencent.asr.utils.AsrUtils;
 import com.tencent.core.help.SignHelper;
+import com.tencent.core.model.GlobalConfig;
 import com.tencent.core.service.ReportService;
 import com.tencent.core.utils.JsonUtil;
 import com.tencent.core.utils.SignBuilder;
@@ -34,7 +35,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
-import lombok.SneakyThrows;
 import okhttp3.Response;
 import okhttp3.WebSocket;
 import okhttp3.WebSocketListener;
@@ -159,9 +159,14 @@ public class SpeechWsRecognizer implements SpeechRecognizer {
                     asrRequest.setExpired(System.currentTimeMillis() / 1000 + 86400);
                     String paramUrl = SignHelper.createUrl(speechRecognitionSignService.getWsParams(asrConfig,
                             asrRequest, asrRequestContent));
-                    String signUrl = asrConfig.getWsSignUrl() + asrConfig.getAppId() + paramUrl;
-                    String sign = SignBuilder.base64_hmac_sha1(signUrl, asrConfig.getSecretKey());
+                    String sign = "";
                     String url = asrConfig.getWsUrl() + asrConfig.getAppId() + paramUrl;
+                    if (GlobalConfig.privateSdk) {
+                        url = asrConfig.getWsUrl() + paramUrl;
+                    } else {
+                        String signUrl = asrConfig.getWsSignUrl() + asrConfig.getAppId() + paramUrl;
+                        sign = SignBuilder.base64_hmac_sha1(signUrl, asrConfig.getSecretKey());
+                    }
                     WebSocketListener webSocketListener = createWebSocketListener();
                     webSocket = wsClientService.asrWebSocket(asrConfig.getToken(), url, sign, webSocketListener);
                     boolean countDown = startLatch.await(SpeechRecognitionSysConfig.wsStartMethodWait,
@@ -313,6 +318,7 @@ public class SpeechWsRecognizer implements SpeechRecognizer {
                 } catch (Exception e) {
                     throw e;
                 } finally {
+                    endFlag.set(true);
                     countDownStart("onFailure");
                     countDownStop("onFailure");
                 }

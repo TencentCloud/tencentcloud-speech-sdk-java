@@ -52,6 +52,11 @@ public class GlobalConfig {
     public static String region = "ap-shanghai";
 
     /**
+     *  私有化场景 其他场景切莫修改
+     */
+    public static boolean privateSdk = false;
+
+    /**
      * 是否上报请求
      */
     public static Boolean ifOpenStat = false;

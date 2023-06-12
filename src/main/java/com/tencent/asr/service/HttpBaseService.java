@@ -29,6 +29,7 @@ import com.tencent.asr.utils.AsrUtils;
 import com.tencent.core.handler.BaseEventListener;
 import com.tencent.core.handler.RealTimeEventListener;
 import com.tencent.core.help.SignHelper;
+import com.tencent.core.model.GlobalConfig;
 import com.tencent.core.service.ReportService;
 import com.tencent.core.utils.ByteUtils;
 import com.tencent.core.utils.JsonUtil;
@@ -268,10 +269,14 @@ public class HttpBaseService {
         String stamp = content.getStreamId() + "_asr_" + content.getVoiceId() + "_" + content.getSeq();
         String paramUrl = SignHelper.createUrl(speechRecognitionSignService.getParams(asrConfig,
                 asrRequest, content));
-        String signUrl = "POST" + asrConfig.getSignUrl() + asrConfig.getAppId() + paramUrl;
-        String sign = SignBuilder.base64_hmac_sha1(signUrl, asrConfig.getSecretKey());
         String url = asrConfig.getRealAsrUrl() + asrConfig.getAppId() + paramUrl;
-
+        String sign = "";
+        if (GlobalConfig.privateSdk) {
+            url = asrConfig.getRealAsrUrl() + paramUrl;
+        } else {
+            String signUrl = "POST" + asrConfig.getSignUrl() + asrConfig.getAppId() + paramUrl;
+            sign = SignBuilder.base64_hmac_sha1(signUrl, asrConfig.getSecretKey());
+        }
         AsrRequest tempRequest = JsonUtil.fromJson(JsonUtil.toJson(asrRequest), AsrRequest.class);
         httpClientRequest(content, stamp, url, sign, tempRequest);
         return stamp;

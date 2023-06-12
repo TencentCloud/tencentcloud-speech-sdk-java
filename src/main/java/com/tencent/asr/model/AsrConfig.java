@@ -77,7 +77,8 @@ public class AsrConfig extends TConfig {
     public AsrConfig(String appId, String secretKey, String secretId,
             Long waitTime, String realAsrUrl, String signUrl,
             String logUrl, String wsUrl, String token) {
-        super(secretId, secretKey, Long.valueOf(appId), token);
+        super(Optional.ofNullable(secretId).orElse(""), Optional.ofNullable(secretKey).orElse(""),
+                Long.valueOf(Optional.ofNullable(appId).orElse("0")), token);
         this.realAsrUrl = Optional.ofNullable(realAsrUrl).orElse("https://asr.cloud.tencent.com/asr/v1/");
         this.signUrl = Optional.ofNullable(signUrl).orElse("asr.cloud.tencent.com/asr/v1/");
         this.logUrl = Optional.ofNullable(logUrl).orElse("https://asr.tencentcloudapi.com/");
