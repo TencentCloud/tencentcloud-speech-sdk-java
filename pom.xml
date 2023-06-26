@@ -7,7 +7,7 @@
 
     <groupId>com.tencentcloudapi</groupId>
     <artifactId>tencentcloud-speech-sdk-java</artifactId>
-    <version>1.0.28</version>
+    <version>1.0.29</version>
     <name>tencentcloud-speech-sdk-java</name>
     <packaging>jar</packaging>
     <description>Tencent Cloud ASR and TTS SDK for Java</description>
@@ -39,7 +39,7 @@
         <dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
-            <version>1.10</version>
+            <version>1.13</version>
         </dependency>
 
         <dependency>

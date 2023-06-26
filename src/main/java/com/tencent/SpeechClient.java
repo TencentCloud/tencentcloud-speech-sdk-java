@@ -42,8 +42,12 @@ import com.tencent.core.service.ReportService;
 import com.tencent.core.service.StatService;
 import com.tencent.tts.model.SpeechSynthesisConfig;
 import com.tencent.tts.model.SpeechSynthesisRequest;
+import com.tencent.tts.model.SpeechWsSynthesisRequest;
+import com.tencent.tts.model.SpeechWsSynthesisServerConfig;
 import com.tencent.tts.service.SpeechSynthesisListener;
 import com.tencent.tts.service.SpeechSynthesizer;
+import com.tencent.tts.service.SpeechWsSynthesisListener;
+import com.tencent.tts.service.SpeechWsSynthesizer;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
@@ -260,5 +264,40 @@ public class SpeechClient {
             throw new SdkRunException(CODE_10010);
         }
         return new VirtualNumberRecognizer(config, request, listener);
+    }
+
+    /**
+     * newSpeechWsSynthesizer 初始化websocket
+     *
+     * @param request SpeechWsSynthesisRequest
+     * @param listener SpeechWsSynthesisListener
+     * @return SpeechWsSynthesizer
+     */
+    public static SpeechWsSynthesizer newSpeechWsSynthesizer(SpeechWsSynthesisRequest request,
+            SpeechWsSynthesisListener listener) {
+        return newSpeechWsSynthesizer(SpeechWsSynthesisServerConfig.initSpeechWsSynthesisServerConfig(), request,
+                listener);
+    }
+
+    /**
+     * newSpeechWsSynthesizer 初始化websocket
+     *
+     * @param config SpeechWsSynthesisServerConfig
+     * @param request SpeechWsSynthesisRequest
+     * @param listener SpeechWsSynthesisListener
+     * @return SpeechWsSynthesizer
+     */
+    public static SpeechWsSynthesizer newSpeechWsSynthesizer(SpeechWsSynthesisServerConfig config,
+            SpeechWsSynthesisRequest request,
+            SpeechWsSynthesisListener listener) {
+        if (config == null || request == null || listener == null) {
+            ReportService.ifLogMessage("", "Please check config or request or listener,maybe null ", false);
+            throw new SdkRunException(CODE_10010);
+        }
+        if (request.getAppId() == null || request.getSecretId() == null || request.getSecretKey() == null) {
+            ReportService.ifLogMessage("", "Please check appid or secretid or secretkey,maybe null ", false);
+            throw new SdkRunException(CODE_10010);
+        }
+        return new SpeechWsSynthesizer(config, request, listener);
     }
 }
