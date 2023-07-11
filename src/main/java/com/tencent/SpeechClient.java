@@ -223,6 +223,31 @@ public class SpeechClient {
                 config, request, speechRecognitionListener);
     }
 
+    /**
+     * asr websocket 支持自定义场景
+     * @param credential 账号信息
+     * @param clientService client
+     * @param request 请求参数
+     * @param speechRecognitionListener listener
+     * @return
+     */
+    public static SpeechRecognizer newSpeechWsRecognizer(Credential credential,
+            WsClientService clientService, SpeechRecognitionRequest request,
+            SpeechRecognitionListener speechRecognitionListener) {
+        AsrConfig config = AsrConfig.builder()
+                .appId(credential.getAppid())
+                .secretId(credential.getSecretId())
+                .secretKey(credential.getSecretKey())
+                .token(credential.getToken())
+                .build();
+        if (request.getEngineModelType() == null) {
+            throw new RuntimeException("engineModelType can not be null,please "
+                    + "set SpeechRecognitionRequest EngineModelType !!");
+        }
+        return new SpeechWsRecognizer(clientService, RandomUtil.randomString(8),
+                config, request, speechRecognitionListener);
+    }
+
 
     /**
      * newSpeechFlashRecognizer

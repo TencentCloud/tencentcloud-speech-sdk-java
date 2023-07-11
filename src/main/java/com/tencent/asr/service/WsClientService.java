@@ -42,6 +42,14 @@ public class WsClientService {
     protected OkHttpClient client;
 
     /**
+     * 自定义场景
+     * @param client okhttpclient
+     */
+    public WsClientService(OkHttpClient client){
+        this.client=client;
+    }
+
+    /**
      * @param config okhttp client config
      */
     public WsClientService(SpeechWebsocketConfig config) {

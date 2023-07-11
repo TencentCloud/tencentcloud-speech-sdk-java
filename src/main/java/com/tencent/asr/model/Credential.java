@@ -10,6 +10,11 @@ import lombok.*;
 public class Credential {
 
     /**
+     * appid
+     */
+    private String appid;
+
+    /**
      * secretId,在控制台申请
      */
     private String secretId;
