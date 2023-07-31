@@ -86,6 +86,8 @@ public class SpeechWsRecognizer implements SpeechRecognizer {
      */
     protected volatile AtomicBoolean startFlag = new AtomicBoolean(false);
     protected volatile AtomicBoolean endFlag = new AtomicBoolean(false);
+    protected volatile AtomicBoolean firstFlag = new AtomicBoolean(false);
+    protected volatile AtomicBoolean errorFlag = new AtomicBoolean(false);
 
     /**
      * 签名service
@@ -172,7 +174,17 @@ public class SpeechWsRecognizer implements SpeechRecognizer {
                     boolean countDown = startLatch.await(SpeechRecognitionSysConfig.wsStartMethodWait,
                             TimeUnit.SECONDS);
                     if (!countDown) {
-                        throw new SdkRunException(AsrConstant.Code.CODE_10001);
+                        try {
+                            webSocket.close(1002,"close");
+                        }catch (Exception e){
+                            e.printStackTrace();
+                        }
+                        ReportService.ifLogMessage(getId(), "start timeout", false);
+                        return false;
+                    }
+                    if (errorFlag.get() || endFlag.get()) {
+                        ReportService.ifLogMessage(getId(), "start error or end", false);
+                        return false;
                     }
                 }
             } catch (Exception e) {
@@ -189,11 +201,12 @@ public class SpeechWsRecognizer implements SpeechRecognizer {
      * 创建ws连接
      */
     @Override
-    public void start() throws SdkRunException {
+    public Boolean start() throws SdkRunException {
         Boolean success = createWebsocket();
         if (success) {
             startFlag.set(true);
         }
+        return startFlag.get();
     }
 
     /**
@@ -318,6 +331,7 @@ public class SpeechWsRecognizer implements SpeechRecognizer {
                 } catch (Exception e) {
                     throw e;
                 } finally {
+                    errorFlag.set(true);
                     endFlag.set(true);
                     countDownStart("onFailure");
                     countDownStop("onFailure");
@@ -332,6 +346,20 @@ public class SpeechWsRecognizer implements SpeechRecognizer {
                     if (listener != null && response != null) {
                         listener.onMessage(response);
                         if (response.getCode() == 0) {
+                            if (!firstFlag.get()) {
+                                firstFlag.set(true);
+                                countDownStart("onMessage first package");
+                                if (listener != null) {
+                                    //start
+                                    SpeechRecognitionResponse recognitionResponse = new SpeechRecognitionResponse();
+                                    recognitionResponse.setCode(0);
+                                    recognitionResponse.setStreamId(asrRequestContent.getStreamId());
+                                    recognitionResponse.setFinalSpeech(0);
+                                    recognitionResponse.setVoiceId(asrRequestContent.getVoiceId());
+                                    recognitionResponse.setMessage("success");
+                                    listener.onRecognitionStart(recognitionResponse);
+                                }
+                            }
                             //回调
                             resultCallBack(response);
                             ReportService.report(true, String.valueOf(response.getCode()), asrConfig,
@@ -343,11 +371,16 @@ public class SpeechWsRecognizer implements SpeechRecognizer {
                             response.setStreamId(asrRequestContent.getStreamId());
                             response.setVoiceId(asrRequestContent.getVoiceId());
                             //错误，直接结束
+                            errorFlag.set(true);
                             endFlag.set(true);
+                            countDownStart("onMessage");
+                            countDownStop("onMessage");
                             listener.onFail(response);
+
                         }
                     }
                 } catch (Exception e) {
+                    e.printStackTrace();
                     throw e;
                 }
             }
@@ -363,17 +396,6 @@ public class SpeechWsRecognizer implements SpeechRecognizer {
                 if (!(response.code() == 101)) {
                     ReportService.ifLogMessage(getId(), "onOpen: fail", false);
                     webSocket.close(1001, "onOpen");
-                }
-                countDownStart("onOpen");
-                if (listener != null) {
-                    //start
-                    SpeechRecognitionResponse recognitionResponse = new SpeechRecognitionResponse();
-                    recognitionResponse.setCode(0);
-                    recognitionResponse.setStreamId(asrRequestContent.getStreamId());
-                    recognitionResponse.setFinalSpeech(0);
-                    recognitionResponse.setVoiceId(asrRequestContent.getVoiceId());
-                    recognitionResponse.setMessage("success");
-                    listener.onRecognitionStart(recognitionResponse);
                 }
             }
         };

@@ -28,6 +28,7 @@ import com.tencent.tts.model.SpeechWsSynthesisRequest;
 import com.tencent.tts.model.SpeechWsSynthesisResponse;
 import com.tencent.tts.model.SpeechWsSynthesisServerConfig;
 import com.tencent.tts.service.SpeechSynthesisSignService.TMap;
+import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Map;
 import java.util.UUID;
@@ -88,9 +89,10 @@ public class SpeechWsSynthesizer {
                 return;
             }
             ReportService.ifLogMessage(wsId, "synthesizer start: begin", false);
-            String suffix = SignHelper.createUrl(genParams(request, serverConfig));
+            String suffix = SignHelper.createUrl(genParams(request, serverConfig,false));
             String signUrl = serverConfig.getSignPrefixUrl().concat(suffix);
             String sign = SignBuilder.base64_hmac_sha1(signUrl, request.getSecretKey());
+            suffix = SignHelper.createUrl(genParams(request, serverConfig,true));
             String paramUrl = suffix.concat("&Signature=").concat(URLEncoder.encode(sign, "UTF-8"));
             final String url = serverConfig.getProto().concat(serverConfig.getHost())
                     .concat(serverConfig.getPath()).concat(paramUrl);
@@ -293,7 +295,7 @@ public class SpeechWsSynthesizer {
      * @return param
      */
     private Map<String, Object> genParams(SpeechWsSynthesisRequest request,
-            SpeechWsSynthesisServerConfig serverConfig) {
+            SpeechWsSynthesisServerConfig serverConfig,boolean escape) {
         TMap<String, Object> treeMap = new TMap<String, Object>();
         treeMap.put("Action", serverConfig.getAction());
         treeMap.put("AppId", request.getAppId());
@@ -313,7 +315,15 @@ public class SpeechWsSynthesizer {
         } else {
             treeMap.put("Volume", request.getVolume());
         }
-        treeMap.put("Text", request.getText());
+        if(escape){
+            try {
+                treeMap.put("Text",URLEncoder.encode(request.getText(),"UTF-8") );
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+        }else{
+            treeMap.put("Text", request.getText());
+        }
         treeMap.put("EnableSubtitle", request.getEnableSubtitle());
         treeMap.put("SegmentRate", request.getSegmentRate());
         treeMap.put("EmotionCategory", request.getEmotionCategory());

@@ -48,9 +48,9 @@ public class SpeechHttpRecognizer extends HttpBaseService implements TCall<byte[
     /**
      * 请求前置方法，开启线程监听请求结果
      */
-    public void start() {
+    public Boolean start() {
         if (startFlag.get()) {
-            return;
+            return startFlag.get();
         }
         tractionManager.beginTraction(streamId);
         startFlag.set(true);
@@ -65,6 +65,7 @@ public class SpeechHttpRecognizer extends HttpBaseService implements TCall<byte[
             recognitionResponse.setMessage("success");
             speechRecognitionListener.onRecognitionStart(recognitionResponse);
         }
+        return startFlag.get();
     }
 
 

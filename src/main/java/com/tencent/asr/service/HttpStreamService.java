@@ -43,9 +43,10 @@ public class HttpStreamService extends HttpBaseService implements TCall<InputStr
     /**
      * 请求前置方法，开启线程监听请求结果
      */
-    public void start() {
+    public Boolean start() {
         tractionManager.beginTraction(streamId);
         startListerResult();
+        return true;
     }
 
 

@@ -21,7 +21,7 @@ package com.tencent.asr.service;
  */
 public interface SpeechRecognizer {
 
-    void start();
+    Boolean start();
 
     Boolean stop();
 
