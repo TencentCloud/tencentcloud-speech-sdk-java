@@ -3,7 +3,7 @@ package com.tencent.asr.model;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class VirtualNumberResponse {
-    @JsonProperty("Code")
+    @JsonProperty("code")
     private Integer Code;
     @JsonProperty("message")
     private String Message;
