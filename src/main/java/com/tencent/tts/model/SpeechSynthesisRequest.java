@@ -109,6 +109,16 @@ public class SpeechSynthesisRequest extends TRequest {
     private String codec;
 
     /**
+     * 控制合成音频的情感，仅支持多情感音色使用。
+     * neutral(中性)、sad(悲伤)、happy(高兴)、angry(生气)、fear(恐惧)、news(新闻)、story(故事)、radio(广播)、poetry(诗歌)、call(客服)
+     */
+    private String EmotionCategory;
+    /**
+     * 控制合成音频情感程度，取值范围为[50,200],默认为100；只有 EmotionCategory 不为空时生效；
+     */
+    private Integer EmotionIntensity;
+
+    /**
      * 扩展字段
      */
     private Map<String, Object> extendsParam;

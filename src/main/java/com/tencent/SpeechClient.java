@@ -225,6 +225,7 @@ public class SpeechClient {
 
     /**
      * asr websocket 支持自定义场景
+     *
      * @param credential 账号信息
      * @param clientService client
      * @param request 请求参数
@@ -298,7 +299,7 @@ public class SpeechClient {
      * @param listener SpeechWsSynthesisListener
      * @return SpeechWsSynthesizer
      */
-    public static SpeechWsSynthesizer newSpeechWsSynthesizer(SpeechWsSynthesisRequest request,
+    private static SpeechWsSynthesizer newSpeechWsSynthesizer(SpeechWsSynthesisRequest request,
             SpeechWsSynthesisListener listener) {
         return newSpeechWsSynthesizer(SpeechWsSynthesisServerConfig.initSpeechWsSynthesisServerConfig(), request,
                 listener);
@@ -317,6 +318,9 @@ public class SpeechClient {
             SpeechWsSynthesisListener listener) {
         if (config == null || request == null || listener == null) {
             ReportService.ifLogMessage("", "Please check config or request or listener,maybe null ", false);
+            throw new SdkRunException(CODE_10010);
+        }
+        if (config.getClient() == null) {
             throw new SdkRunException(CODE_10010);
         }
         if (request.getAppId() == null || request.getSecretId() == null || request.getSecretKey() == null) {

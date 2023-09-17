@@ -27,7 +27,7 @@ import java.util.TreeMap;
 class SpeechSynthesisSignService {
 
     public String signUrl(SpeechSynthesisConfig speechSynthesisConfig, SpeechSynthesisRequest request,
-                          SpeechSynthesisRequestContent content, TreeMap<String, Object> map) {
+            SpeechSynthesisRequestContent content, TreeMap<String, Object> map) {
         String paramUrl = SignHelper.createUrl(map);
         return speechSynthesisConfig.getSignUrl() + paramUrl;
     }
@@ -42,8 +42,8 @@ class SpeechSynthesisSignService {
      * @return
      */
     public static TreeMap<String, Object> getParams(SpeechSynthesisConfig speechSynthesisConfig,
-                                                    SpeechSynthesisRequest request,
-                                                    SpeechSynthesisRequestContent content) {
+            SpeechSynthesisRequest request,
+            SpeechSynthesisRequestContent content) {
         TMap<String, Object> treeMap = new TMap<String, Object>();
         treeMap.put("SecretId", speechSynthesisConfig.getSecretId());
         treeMap.put("Text", content.getText());
@@ -66,6 +66,8 @@ class SpeechSynthesisSignService {
         //这里AppID为long类型
         treeMap.put("AppId", speechSynthesisConfig.getAppId());
         treeMap.put("ProjectId", request.getProjectId());
+        treeMap.put("EmotionCategory", request.getEmotionCategory());
+        treeMap.put("EmotionIntensity", request.getEmotionIntensity());
 
         if (request.getExtendsParam() != null) {
             for (Map.Entry<String, Object> entry : request.getExtendsParam().entrySet()) {
@@ -83,6 +85,7 @@ class SpeechSynthesisSignService {
      * @param <V>
      */
     public static class TMap<K, V> extends TreeMap {
+
         @Override
         public Object put(Object key, Object value) {
             if (value != null) {

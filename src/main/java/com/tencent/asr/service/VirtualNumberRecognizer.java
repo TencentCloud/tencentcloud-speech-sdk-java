@@ -76,7 +76,7 @@ public class VirtualNumberRecognizer {
     /**
      * start 开启
      */
-    public void start() {
+    public boolean start() {
         try {
             if (serverConfig == null || listener == null || request == null) {
                 throw new SdkRunException(Code.CODE_10010);
@@ -84,7 +84,7 @@ public class VirtualNumberRecognizer {
             boolean start = startWs.compareAndSet(false, true);
             if (!start) {
                 ReportService.ifLogMessage(wsId, "started!!", true);
-                return;
+                return false;
             }
             String suffix = SignHelper.createUrl(getVirtualNumberRequestParam());
             String signUrl = serverConfig.getSignPrefixUrl().concat(request.getAppId().toString())
@@ -110,19 +110,28 @@ public class VirtualNumberRecognizer {
             webSocket = serverConfig.getClient().newWebSocket(request, webSocketListener);
             boolean onopen = onopenWait.await(serverConfig.getOnopenWaitTime(), TimeUnit.SECONDS);
             if (!onopen) {
-                throw new SdkRunException(AsrConstant.Code.CODE_10001);
+                webSocket.cancel();
+                //throw new SdkRunException(AsrConstant.Code.CODE_10001);
+                ReportService.ifLogMessage(wsId, AsrConstant.Code.CODE_10001.getMessage(), true);
+                return false;
             }
             if (errWs.get()) {
                 webSocket.cancel();
-                throw new SdkRunException(AsrConstant.Code.CODE_10012);
+                //throw new SdkRunException(AsrConstant.Code.CODE_10012);
+                ReportService.ifLogMessage(wsId, AsrConstant.Code.CODE_10012.getMessage(), true);
+                return false;
             }
         } catch (SdkRunException e) {
-            throw e;
+            return false;
         } catch (Exception e) {
+            e.printStackTrace();
             //失败则重置
             startWs.set(false);
-            throw new SdkRunException(e.getCause(), AsrConstant.Code.CODE_10001);
+            ReportService.ifLogMessage(wsId, AsrConstant.Code.CODE_10001.getMessage(), true);
+            //throw new SdkRunException(e.getCause(), AsrConstant.Code.CODE_10001);
+            return false;
         }
+        return true;
     }
 
     /**
@@ -152,7 +161,8 @@ public class VirtualNumberRecognizer {
                 try {
                     String trace = Tutils.getStackTrace(t);
                     if (StringUtils.contains(trace, "Socket closed")) {
-                        ReportService.ifLogMessage(wsId, "onFailure:" + trace, true);
+                        //ReportService.ifLogMessage(wsId, "onFailure:" + trace, true);
+                        ReportService.ifLogMessage(wsId, "onFailure: socket close" , true);
                         //服务端主动释放连接socket close 直接return
                         return;
                     }
@@ -262,7 +272,8 @@ public class VirtualNumberRecognizer {
             }
         } catch (InterruptedException e) {
             ReportService.ifLogMessage(wsId, "stop_exception:" + e.getMessage(), false);
-            throw new SdkRunException(e.getCause(), AsrConstant.Code.CODE_10004);
+            //throw new SdkRunException(e.getCause(), AsrConstant.Code.CODE_10004);
+            return false;
         }
         return true;
     }

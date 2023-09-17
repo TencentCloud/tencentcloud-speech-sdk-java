@@ -1,6 +1,5 @@
 package com.tencent.asr.model;
 
-import com.tencent.asr.service.VirtualNumberRecognizer;
 import com.tencent.core.model.GlobalConfig;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
@@ -260,7 +259,7 @@ public class VirtualNumberServerConfig {
      */
     public static VirtualNumberServerConfig InitVirtualNumberServerConfig() {
         VirtualNumberServerConfig config = new VirtualNumberServerConfig();
-        config.setOnopenWaitTime(1);
+        config.setOnopenWaitTime(2);
         config.setCloseWaitTime(1);
         config.setRetryRequestNum(3);
         config.setMaxIdlConnections(600);

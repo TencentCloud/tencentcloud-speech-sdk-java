@@ -125,14 +125,13 @@ public class SpeechSynthesizer {
                             .setSocketTimeout(30000)
                             .setConnectionRequestTimeout(1500)
                             .build();
-                    this.httpclient = HttpClients.custom().setConnectionManager(cm)
+                    SpeechSynthesisSysConfig.httpclient = HttpClients.custom().setConnectionManager(cm)
                             .setConnectionManagerShared(true)
                             .setDefaultRequestConfig(requestConfig).build();
                 }
             }
-        } else {
-            this.httpclient = SpeechSynthesisSysConfig.httpclient;
         }
+        this.httpclient = SpeechSynthesisSysConfig.httpclient;
     }
 
 
@@ -326,11 +325,7 @@ public class SpeechSynthesizer {
             synthesizerResponse.setMessage("IOException:" + exception.getMessage());
             //exception.printStackTrace();
         } finally {
-            try {
-                httpclient.close();
-            } catch (IOException exception) {
-                // exception.printStackTrace();
-            }
+
         }
         return synthesizerResponse;
     }
