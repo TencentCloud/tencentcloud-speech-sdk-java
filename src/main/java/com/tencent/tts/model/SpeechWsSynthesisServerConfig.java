@@ -47,6 +47,11 @@ public class SpeechWsSynthesisServerConfig {
      */
     private int onopenWaitTime = 6;
 
+    /**
+     * onopen方法等待时间单位 默认秒
+     */
+    private TimeUnit onopenWaitTimeUnit = TimeUnit.SECONDS;
+
 
     /**
      * 发送数据包失败后重试次数
@@ -116,6 +121,14 @@ public class SpeechWsSynthesisServerConfig {
 
     public void setAction(String action) {
         this.action = action;
+    }
+
+    public TimeUnit getOnopenWaitTimeUnit() {
+        return onopenWaitTimeUnit;
+    }
+
+    public void setOnopenWaitTimeUnit(TimeUnit onopenWaitTimeUnit) {
+        this.onopenWaitTimeUnit = onopenWaitTimeUnit;
     }
 
     /**

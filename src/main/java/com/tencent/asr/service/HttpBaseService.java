@@ -37,7 +37,9 @@ import com.tencent.core.utils.SignBuilder;
 import com.tencent.core.utils.Tutils;
 import java.io.IOException;
 import java.net.SocketTimeoutException;
+import java.net.URLEncoder;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -267,9 +269,13 @@ public class HttpBaseService {
         asrRequest.setTimestamp(System.currentTimeMillis() / 1000);
         asrRequest.setExpired((System.currentTimeMillis() / 1000) + 86400);
         String stamp = content.getStreamId() + "_asr_" + content.getVoiceId() + "_" + content.getSeq();
-        String paramUrl = SignHelper.createUrl(speechRecognitionSignService.getParams(asrConfig,
-                asrRequest, content));
-        String url = asrConfig.getRealAsrUrl() + asrConfig.getAppId() + paramUrl;
+        Map<String, Object> paramMap = speechRecognitionSignService.getParams(asrConfig,
+                asrRequest, content);
+        String paramUrl = SignHelper.createUrl(paramMap);
+        if (asrRequest.getHotwordList() != null) {
+            paramMap.put("hotword_list", URLEncoder.encode(asrRequest.getHotwordList()));
+        }
+        String url = asrConfig.getRealAsrUrl() + asrConfig.getAppId() + SignHelper.createUrl(paramMap);
         String sign = "";
         if (GlobalConfig.privateSdk) {
             url = asrConfig.getRealAsrUrl() + paramUrl;

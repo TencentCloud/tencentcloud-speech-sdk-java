@@ -30,8 +30,9 @@ import com.tencent.core.service.ReportService;
 import com.tencent.core.utils.JsonUtil;
 import com.tencent.core.utils.SignBuilder;
 import com.tencent.core.utils.Tutils;
+import java.net.URLEncoder;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
@@ -159,10 +160,14 @@ public class SpeechWsRecognizer implements SpeechRecognizer {
                     ReportService.ifLogMessage(getId(), "create websocket", false);
                     asrRequest.setTimestamp(System.currentTimeMillis() / 1000);
                     asrRequest.setExpired(System.currentTimeMillis() / 1000 + 86400);
-                    String paramUrl = SignHelper.createUrl(speechRecognitionSignService.getWsParams(asrConfig,
-                            asrRequest, asrRequestContent));
+                    Map<String,Object> paramMap=speechRecognitionSignService.getWsParams(asrConfig,
+                            asrRequest, asrRequestContent);
+                    String paramUrl = SignHelper.createUrl(paramMap);
                     String sign = "";
-                    String url = asrConfig.getWsUrl() + asrConfig.getAppId() + paramUrl;
+                    if (asrRequest.getHotwordList() != null) {
+                        paramMap.put("hotword_list", URLEncoder.encode(asrRequest.getHotwordList()));
+                    }
+                    String url = asrConfig.getWsUrl() + asrConfig.getAppId() + SignHelper.createUrl(paramMap);
                     if (GlobalConfig.privateSdk) {
                         url = asrConfig.getWsUrl() + paramUrl;
                     } else {
@@ -172,7 +177,7 @@ public class SpeechWsRecognizer implements SpeechRecognizer {
                     WebSocketListener webSocketListener = createWebSocketListener();
                     webSocket = wsClientService.asrWebSocket(asrConfig.getToken(), url, sign, webSocketListener);
                     boolean countDown = startLatch.await(SpeechRecognitionSysConfig.wsStartMethodWait,
-                            TimeUnit.SECONDS);
+                            SpeechRecognitionSysConfig.wsMethodWaitTimeUnit);
                     if (!countDown) {
                         try {
                             webSocket.close(1002,"close");
@@ -270,7 +275,7 @@ public class SpeechWsRecognizer implements SpeechRecognizer {
         write(JsonUtil.toJson(MapUtil.builder().put("type", "end").build()));
         endFlag.set(true);
         try {
-            closeLatch.await(SpeechRecognitionSysConfig.wsStopMethodWait, TimeUnit.SECONDS);
+            closeLatch.await(SpeechRecognitionSysConfig.wsStopMethodWait, SpeechRecognitionSysConfig.wsMethodWaitTimeUnit);
         } catch (InterruptedException e) {
             e.printStackTrace();
             ReportService.ifLogMessage(getId(), "stop_exception:" + e.getMessage(), false);

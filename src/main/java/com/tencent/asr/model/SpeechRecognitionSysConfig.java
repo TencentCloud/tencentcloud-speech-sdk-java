@@ -17,6 +17,7 @@
 package com.tencent.asr.model;
 
 import com.tencent.asr.constant.AsrConstant;
+import java.util.concurrent.TimeUnit;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.http.HttpHost;
@@ -97,7 +98,7 @@ public class SpeechRecognitionSysConfig {
     /**
      * wsConnectTimeOut
      */
-    public static int wsConnectTimeOut = 60000;
+    public static int wsConnectTimeOut = 10000;
 
     /**
      * 连接池大小，指单个okhttpclient实例所有连接的连接池。
@@ -125,7 +126,7 @@ public class SpeechRecognitionSysConfig {
      */
     public static int wsStartMethodWait = 3;
     public static int wsStopMethodWait = 2;
-
+    public static TimeUnit wsMethodWaitTimeUnit = TimeUnit.SECONDS;
     /**
      * flash http代理相关
      */

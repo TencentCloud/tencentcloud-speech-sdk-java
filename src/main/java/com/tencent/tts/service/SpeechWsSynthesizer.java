@@ -108,7 +108,7 @@ public class SpeechWsSynthesizer {
             Request request = new Request.Builder().url(url).headers(headers).build();
             WebSocketListener webSocketListener = createWebSocketListener();
             webSocket = serverConfig.getClient().newWebSocket(request, webSocketListener);
-            boolean onopen = onopenWait.await(serverConfig.getOnopenWaitTime(), TimeUnit.SECONDS);
+            boolean onopen = onopenWait.await(serverConfig.getOnopenWaitTime(), serverConfig.getOnopenWaitTimeUnit());
             if (!onopen) {
                 throw new SdkRunException(AsrConstant.Code.CODE_10001);
             }

@@ -146,6 +146,7 @@ class SpeechRecognitionSignService {
         treeMap.put("noise_threshold", request.getNoiseThreshold());
         treeMap.put("hotword_list", request.getHotwordList());
         treeMap.put("reinforce_hotword", request.getReinforceHotword());
+        treeMap.put("max_speak_time", request.getMaxSpeakTime());
         return treeMap;
     }
 

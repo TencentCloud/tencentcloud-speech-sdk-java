@@ -176,6 +176,13 @@ public class AsrRequest extends TRequest {
      */
     private String hotwordList;
 
+    /**
+     * 强制断句功能，取值范围 5000-90000(单位:毫秒），默认值0(不开启)。 在连续说话不间断情况下，该参数将实现强制断句
+     * （此时结果变成稳态，slice_type=2）。如：游戏解说场景，解说员持续不间断解说，无法断句的情况下，将此参数设置为10000，
+     * 则将在每10秒收到 slice_type=2的回调。
+     */
+    private Integer MaxSpeakTime;
+
 
     /**
      * 扩展字段

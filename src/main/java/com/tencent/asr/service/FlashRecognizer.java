@@ -26,6 +26,7 @@ import com.tencent.core.service.ReportService;
 import com.tencent.core.utils.JsonUtil;
 import com.tencent.core.utils.SignBuilder;
 import com.tencent.core.utils.Tutils;
+import java.net.URLEncoder;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -38,7 +39,7 @@ import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.util.EntityUtils;
-
+import java.util.Map;
 //极速版
 public class FlashRecognizer {
 
@@ -86,12 +87,15 @@ public class FlashRecognizer {
             throw new RuntimeException("write data is null!!!");
         }
         request.setTimestamp(System.currentTimeMillis() / 1000);
-
-        String paramUrl = SignHelper.createUrl(speechRecognitionSignService.getFlashParams(config, request));
+        Map<String,Object> paramMap=speechRecognitionSignService.getFlashParams(config, request);
+        String paramUrl = SignHelper.createUrl(paramMap);
         String signUrl = "POST"+config.getFlashSignUrl() + config.getAppId() + paramUrl;
         String sign = SignBuilder.base64_hmac_sha1(signUrl, config.getSecretKey());
-
-        String url = config.getFlashUrl() + config.getAppId() + paramUrl;
+        //url编码
+        if (request.getHotwordList() != null) {
+            paramMap.put("hotword_list",URLEncoder.encode(request.getHotwordList()));
+        }
+        String url = config.getFlashUrl() + config.getAppId() + SignHelper.createUrl(paramMap);
         CloseableHttpResponse httpResponse = null;
         try {
             HttpPost httpPost = new HttpPost(url);
