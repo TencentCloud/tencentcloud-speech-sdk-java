@@ -17,10 +17,12 @@
 package com.tencent.tts.model;
 
 import com.tencent.core.model.GlobalConfig;
+
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+
 import okhttp3.ConnectionPool;
 import okhttp3.Dispatcher;
 import okhttp3.OkHttpClient;
@@ -43,9 +45,9 @@ public class SpeechWsSynthesisServerConfig {
     private OkHttpClient client;
 
     /**
-     * onopen方法等待时间
+     * onopen方法等待时间 建议该值大于connectTime值否则会出现错误
      */
-    private int onopenWaitTime = 6;
+    private int onopenWaitTime = 3;
 
     /**
      * onopen方法等待时间单位 默认秒
@@ -57,6 +59,18 @@ public class SpeechWsSynthesisServerConfig {
      * 发送数据包失败后重试次数
      */
     private int retryRequestNum = 3;
+    /**
+     * 连接超时时间
+     */
+    private int connectTime = 1000;
+
+    public int getConnectTime() {
+        return connectTime;
+    }
+
+    public void setConnectTime(int connectTime) {
+        this.connectTime = connectTime;
+    }
 
     public int getOnopenWaitTime() {
         return onopenWaitTime;
@@ -149,17 +163,9 @@ public class SpeechWsSynthesisServerConfig {
      * @return
      */
     public OkHttpClient initOkHttp() {
-        ExecutorService treadPool = treadPool = new ThreadPoolExecutor(10,
-                Integer.MAX_VALUE, 60, TimeUnit.SECONDS,
-                new SynchronousQueue<Runnable>(), Util.threadFactory("OkHttp Dispatcher", false));
+        ExecutorService treadPool = treadPool = new ThreadPoolExecutor(10, Integer.MAX_VALUE, 60, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(), Util.threadFactory("OkHttp Dispatcher", false));
         OkHttpClient.Builder okHttpBuilder = new OkHttpClient.Builder();
-        okHttpBuilder.dispatcher(new Dispatcher(treadPool))
-                .connectionPool(new ConnectionPool(600,
-                        300000, TimeUnit.MILLISECONDS))
-                .writeTimeout(60000, TimeUnit.MILLISECONDS)
-                .readTimeout(60000, TimeUnit.MILLISECONDS)
-                .connectTimeout(60000, TimeUnit.MILLISECONDS)
-                .retryOnConnectionFailure(true);
+        okHttpBuilder.dispatcher(new Dispatcher(treadPool)).connectionPool(new ConnectionPool(600, 300000, TimeUnit.MILLISECONDS)).writeTimeout(60000, TimeUnit.MILLISECONDS).readTimeout(60000, TimeUnit.MILLISECONDS).connectTimeout(this.connectTime, TimeUnit.MILLISECONDS).retryOnConnectionFailure(true);
         if (GlobalConfig.ifLog) {
             HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
             loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);

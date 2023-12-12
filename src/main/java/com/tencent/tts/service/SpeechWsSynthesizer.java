@@ -28,6 +28,7 @@ import com.tencent.tts.model.SpeechWsSynthesisRequest;
 import com.tencent.tts.model.SpeechWsSynthesisResponse;
 import com.tencent.tts.model.SpeechWsSynthesisServerConfig;
 import com.tencent.tts.service.SpeechSynthesisSignService.TMap;
+
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Map;
@@ -35,6 +36,7 @@ import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+
 import okhttp3.Headers;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -52,7 +54,7 @@ public class SpeechWsSynthesizer {
     private SpeechWsSynthesisListener listener;
 
     public SpeechWsSynthesizer(SpeechWsSynthesisServerConfig serverConfig, SpeechWsSynthesisRequest request,
-            SpeechWsSynthesisListener listener) {
+                               SpeechWsSynthesisListener listener) {
         this.serverConfig = serverConfig;
         this.request = request;
         this.listener = listener;
@@ -89,10 +91,11 @@ public class SpeechWsSynthesizer {
                 return;
             }
             ReportService.ifLogMessage(wsId, "synthesizer start: begin", false);
-            String suffix = SignHelper.createUrl(genParams(request, serverConfig,false));
+            long currentTimeMillis = System.currentTimeMillis();
+            String suffix = SignHelper.createUrl(genParams(request, serverConfig, false, currentTimeMillis));
             String signUrl = serverConfig.getSignPrefixUrl().concat(suffix);
             String sign = SignBuilder.base64_hmac_sha1(signUrl, request.getSecretKey());
-            suffix = SignHelper.createUrl(genParams(request, serverConfig,true));
+            suffix = SignHelper.createUrl(genParams(request, serverConfig, true, currentTimeMillis));
             String paramUrl = suffix.concat("&Signature=").concat(URLEncoder.encode(sign, "UTF-8"));
             final String url = serverConfig.getProto().concat(serverConfig.getHost())
                     .concat(serverConfig.getPath()).concat(paramUrl);
@@ -295,7 +298,7 @@ public class SpeechWsSynthesizer {
      * @return param
      */
     private Map<String, Object> genParams(SpeechWsSynthesisRequest request,
-            SpeechWsSynthesisServerConfig serverConfig,boolean escape) {
+                                          SpeechWsSynthesisServerConfig serverConfig, boolean escape, long currentTimeMillis) {
         TMap<String, Object> treeMap = new TMap<String, Object>();
         treeMap.put("Action", serverConfig.getAction());
         treeMap.put("AppId", request.getAppId());
@@ -315,13 +318,13 @@ public class SpeechWsSynthesizer {
         } else {
             treeMap.put("Volume", request.getVolume());
         }
-        if(escape){
+        if (escape) {
             try {
-                treeMap.put("Text",URLEncoder.encode(request.getText(),"UTF-8") );
+                treeMap.put("Text", URLEncoder.encode(request.getText(), "UTF-8"));
             } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();
             }
-        }else{
+        } else {
             treeMap.put("Text", request.getText());
         }
         treeMap.put("EnableSubtitle", request.getEnableSubtitle());
@@ -329,8 +332,8 @@ public class SpeechWsSynthesizer {
         treeMap.put("EmotionCategory", request.getEmotionCategory());
         treeMap.put("EmotionIntensity", request.getEmotionIntensity());
         treeMap.put("SessionId", request.getSessionId());
-        treeMap.put("Timestamp", System.currentTimeMillis() / 1000);
-        treeMap.put("Expired", System.currentTimeMillis() / 1000 + 86400); // 1天后过期
+        treeMap.put("Timestamp", currentTimeMillis / 1000);
+        treeMap.put("Expired", currentTimeMillis / 1000 + 86400); // 1天后过期
         if (request.getExtendsParam() != null) {
             for (Map.Entry<String, Object> entry : request.getExtendsParam().entrySet()) {
                 treeMap.put(entry.getKey(), entry.getValue());
