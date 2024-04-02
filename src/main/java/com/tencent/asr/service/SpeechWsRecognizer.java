@@ -30,12 +30,14 @@ import com.tencent.core.service.ReportService;
 import com.tencent.core.utils.JsonUtil;
 import com.tencent.core.utils.SignBuilder;
 import com.tencent.core.utils.Tutils;
+
 import java.net.URLEncoder;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
+
 import okhttp3.Response;
 import okhttp3.WebSocket;
 import okhttp3.WebSocketListener;
@@ -128,13 +130,13 @@ public class SpeechWsRecognizer implements SpeechRecognizer {
     /**
      * 初始化参数
      *
-     * @param config 配置
-     * @param request 请求参数
+     * @param config   配置
+     * @param request  请求参数
      * @param listener 回调
      */
     public SpeechWsRecognizer(WsClientService wsClientService,
-            String streamId, AsrConfig config,
-            SpeechRecognitionRequest request, SpeechRecognitionListener listener) {
+                              String streamId, AsrConfig config,
+                              SpeechRecognitionRequest request, SpeechRecognitionListener listener) {
         this.wsClientService = wsClientService;
         this.asrConfig = config;
         this.asrRequest = request;
@@ -160,7 +162,7 @@ public class SpeechWsRecognizer implements SpeechRecognizer {
                     ReportService.ifLogMessage(getId(), "create websocket", false);
                     asrRequest.setTimestamp(System.currentTimeMillis() / 1000);
                     asrRequest.setExpired(System.currentTimeMillis() / 1000 + 86400);
-                    Map<String,Object> paramMap=speechRecognitionSignService.getWsParams(asrConfig,
+                    Map<String, Object> paramMap = speechRecognitionSignService.getWsParams(asrConfig,
                             asrRequest, asrRequestContent);
                     String paramUrl = SignHelper.createUrl(paramMap);
                     String sign = "";
@@ -180,8 +182,8 @@ public class SpeechWsRecognizer implements SpeechRecognizer {
                             SpeechRecognitionSysConfig.wsMethodWaitTimeUnit);
                     if (!countDown) {
                         try {
-                            webSocket.close(1002,"close");
-                        }catch (Exception e){
+                            webSocket.close(1002, "close");
+                        } catch (Exception e) {
                             e.printStackTrace();
                         }
                         ReportService.ifLogMessage(getId(), "start timeout", false);
@@ -252,13 +254,17 @@ public class SpeechWsRecognizer implements SpeechRecognizer {
      *
      * @param data 数据
      */
-    private void write(String data) {
+    private boolean write(String data) {
         if (!endFlag.get()) {
             //发送数据
             ReportService.ifLogMessage(getId(), "send " + adder.get() + " end package", false);
             adder.incrementAndGet();
-            webSocket.send(data);
+            if(!webSocket.send(data)){
+                ReportService.ifLogMessage(getId(), "send " + adder.get() + " end package failed", false);
+                return false;
+            }
         }
+        return true;
     }
 
 
@@ -272,7 +278,7 @@ public class SpeechWsRecognizer implements SpeechRecognizer {
             return true;
         }
         //发送尾包
-        write(JsonUtil.toJson(MapUtil.builder().put("type", "end").build()));
+        boolean writeSuccess = write(JsonUtil.toJson(MapUtil.builder().put("type", "end").build()));
         endFlag.set(true);
         try {
             closeLatch.await(SpeechRecognitionSysConfig.wsStopMethodWait, SpeechRecognitionSysConfig.wsMethodWaitTimeUnit);
@@ -288,7 +294,7 @@ public class SpeechWsRecognizer implements SpeechRecognizer {
                 e.printStackTrace();
             }
         }
-        return true;
+        return writeSuccess;
     }
 
     /**

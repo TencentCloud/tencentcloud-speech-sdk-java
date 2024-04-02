@@ -7,7 +7,7 @@
 
     <groupId>com.tencentcloudapi</groupId>
     <artifactId>tencentcloud-speech-sdk-java</artifactId>
-    <version>1.0.40</version>
+    <version>1.0.41</version>
     <name>tencentcloud-speech-sdk-java</name>
     <packaging>jar</packaging>
     <description>Tencent Cloud ASR and TTS SDK for Java</description>
@@ -104,6 +104,19 @@
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
             <version>2.9.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.20</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/io.netty/netty-all -->
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-all</artifactId>
+            <version>4.1.85.Final</version>
         </dependency>
     </dependencies>
 

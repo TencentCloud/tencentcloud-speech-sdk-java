@@ -16,6 +16,9 @@
 
 package com.tencent.core.help;
 
+import com.tencent.core.utils.SignBuilder;
+
+import java.net.URLEncoder;
 import java.util.Map;
 
 public class SignHelper {
@@ -38,4 +41,21 @@ public class SignHelper {
     }
 
 
+    public static String createSign(String signPrefixUrl,String param,String appid,String secretKey){
+        return SignBuilder.base64_hmac_sha1(createRequestUrl(signPrefixUrl,param,appid),secretKey);
+    }
+
+    public static String createRequestUrl(String prefixUrl,String param,String appid){
+        return new StringBuilder().append(prefixUrl).append(appid).append(param).toString();
+    }
+    public static Map<String, Object> encode(Map<String, Object> src) {
+        if (src != null) {
+            for (String key : src.keySet()) {
+                if(src.get(key) instanceof String){
+                    src.put(key, URLEncoder.encode(String.valueOf(src.get(key))));
+                }
+            }
+        }
+        return src;
+    }
 }
