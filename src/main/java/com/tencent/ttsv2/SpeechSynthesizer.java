@@ -13,24 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.tencent.asrv2;
-
+package com.tencent.ttsv2;
 
 import com.google.gson.Gson;
 import com.tencent.core.help.SignHelper;
+import com.tencent.core.utils.SignBuilder;
 import com.tencent.core.ws.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.URLEncoder;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import static com.tencent.core.ws.StateMachine.State.*;
+import static com.tencent.core.ws.StateMachine.State.STATE_COMPLETE;
 
+/**
+ * 实时语音合成
+ */
+public class SpeechSynthesizer extends StateMachine {
 
-public class SpeechRecognizer extends StateMachine {
-    static Logger logger = LoggerFactory.getLogger(SpeechRecognizer.class);
+    static Logger logger = LoggerFactory.getLogger(SpeechSynthesizer.class);
 
     /**
      * 上下文信息
@@ -49,11 +53,11 @@ public class SpeechRecognizer extends StateMachine {
     protected Connection conn;
 
     private Credential credential;
-    private SpeechRecognizerRequest request;
+    private SpeechSynthesizerRequest request;
 
     private SpeechClient client;
 
-    private SpeechRecognizerListener listener;
+    private SpeechSynthesizerListener listener;
 
     public Credential getCredential() {
         return credential;
@@ -63,11 +67,11 @@ public class SpeechRecognizer extends StateMachine {
         this.credential = credential;
     }
 
-    public SpeechRecognizerRequest getRequest() {
+    public SpeechSynthesizerRequest getRequest() {
         return request;
     }
 
-    public void setRequest(SpeechRecognizerRequest request) {
+    public void setRequest(SpeechSynthesizerRequest request) {
         this.request = request;
     }
 
@@ -79,29 +83,31 @@ public class SpeechRecognizer extends StateMachine {
         this.client = client;
     }
 
-    public SpeechRecognizerListener getListener() {
+    public SpeechSynthesizerListener getListener() {
         return listener;
     }
 
-    public void setListener(SpeechRecognizerListener listener) {
+    public void setListener(SpeechSynthesizerListener listener) {
         this.listener = listener;
     }
 
-    public SpeechRecognizer(SpeechClient client, Credential credential, SpeechRecognizerRequest request, SpeechRecognizerListener listener) throws Exception {
+    public SpeechSynthesizer(SpeechClient client, Credential credential, SpeechSynthesizerRequest request, SpeechSynthesizerListener listener) throws Exception {
         Optional.ofNullable(client).orElseThrow(() -> new RuntimeException("client cannot be null"));
         Optional.ofNullable(request).orElseThrow(() -> new RuntimeException("request cannot be null"));
         Optional.ofNullable(credential).orElseThrow(() -> new RuntimeException("credential cannot be null"));
         Optional.ofNullable(listener).orElseThrow(() -> new RuntimeException("listener cannot be null"));
-        if (request.getVoiceId() == null) {
-            request.setVoiceId(recUuid);
+        if (request.getSessionId() == null) {
+            request.setSessionId(recUuid);
         }
+        request.setAction("TextToStreamAudioWS");
+        request.setAppId(Integer.valueOf(credential.getAppid()));
         this.request = request;
         this.credential = credential;
         this.client = client;
         this.listener = listener;
         stopLatch = new CountDownLatch(1);
         startLatch = new CountDownLatch(1);
-        listener.setSpeechRecognizer(this);
+        listener.setSpeechSynthesizer(this);
     }
 
     /**
@@ -110,7 +116,7 @@ public class SpeechRecognizer extends StateMachine {
      * @throws Exception
      */
     public void start() throws Exception {
-        start(AsrConstant.DEFAULT_START_TIMEOUT_MILLISECONDS);
+        start(TtsConstant.DEFAULT_START_TIMEOUT_MILLISECONDS);
     }
 
     /**
@@ -128,10 +134,13 @@ public class SpeechRecognizer extends StateMachine {
         request.setTimestamp(System.currentTimeMillis() / 1000);
         request.setExpired(System.currentTimeMillis() / 1000 + 86400); // 1天后过期
         Map<String, Object> sortParamMap = request.toTreeMap();
-        String sign = SignHelper.createSign(AsrConstant.DEFAULT_RT_SIGN_PREFIX, SignHelper.createUrl(sortParamMap), credential.getAppid(), credential.getSecretKey());
-        String url = SignHelper.createRequestUrl(AsrConstant.DEFAULT_RT_REQ_URL, SignHelper.createUrl(SignHelper.encode(sortParamMap)), credential.getAppid());
+        String signUrl = new StringBuilder().append(TtsConstant.DEFAULT_TTS_SIGN_PREFIX).append(SignHelper.createUrl(sortParamMap)).toString();
+        logger.debug(signUrl);
+        String sign = SignBuilder.base64_hmac_sha1(signUrl, credential.getSecretKey());
+        String serverUrl = SignHelper.createUrl(SignHelper.encode(sortParamMap));
+        String url = new StringBuilder().append(TtsConstant.DEFAULT_TTS_REQ_URL).append(serverUrl).append("&Signature=").append(URLEncoder.encode(sign, "UTF-8")).toString();
         logger.debug(url);
-        ConnectionProfile connectionProfile = new ConnectionProfile(sign, url, AsrConstant.DEFAULT_HOST, this.credential.getToken());
+        ConnectionProfile connectionProfile = new ConnectionProfile(sign, url, TtsConstant.DEFAULT_HOST, this.credential.getToken());
         this.conn = client.connect(connectionProfile, this.listener);
         Map<String, Long> network = new HashMap<>();
         network.put(Constant.CONNECTING_LATENCY_KEY, conn.getConnectingLatency());
@@ -150,9 +159,9 @@ public class SpeechRecognizer extends StateMachine {
      *
      * @param data
      */
-    public void write(byte[] data) {
+   /* public void write(byte[] data) {
         write(data, data.length);
-    }
+    }*/
 
     /**
      * 发送数据
@@ -160,7 +169,7 @@ public class SpeechRecognizer extends StateMachine {
      * @param data
      * @param length
      */
-    public void write(byte[] data, int length) {
+    /*public void write(byte[] data, int length) {
         if (state == STATE_COMPLETE) {
             logger.info("state is {} stop send", STATE_COMPLETE);
             return;
@@ -177,7 +186,7 @@ public class SpeechRecognizer extends StateMachine {
             logger.error("fail to send binary,current_task_id:{},state:{}", recUuid, state, e);
             throw new RuntimeException(e);
         }
-    }
+    }*/
 
 
     /**
@@ -186,7 +195,7 @@ public class SpeechRecognizer extends StateMachine {
      * @throws Exception
      */
     public void stop() throws Exception {
-        stop(AsrConstant.DEFAULT_START_TIMEOUT_MILLISECONDS);
+        stop(TtsConstant.DEFAULT_START_TIMEOUT_MILLISECONDS);
     }
 
     /**
@@ -212,6 +221,7 @@ public class SpeechRecognizer extends StateMachine {
                 throw new Exception(msg);
             }
         }
+
     }
 
     /**
@@ -270,6 +280,4 @@ public class SpeechRecognizer extends StateMachine {
             stopLatch.countDown();
         }
     }
-
 }
-

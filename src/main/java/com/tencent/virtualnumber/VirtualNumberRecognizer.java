@@ -13,8 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.tencent.asrv2;
-
+package com.tencent.virtualnumber;
 
 import com.google.gson.Gson;
 import com.tencent.core.help.SignHelper;
@@ -26,11 +25,15 @@ import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import static com.tencent.core.ws.StateMachine.State.*;
+import static com.tencent.core.ws.StateMachine.State.STATE_CLOSED;
+import static com.tencent.core.ws.StateMachine.State.STATE_COMPLETE;
 
+/**
+ * 虚拟号真人判定
+ */
+public class VirtualNumberRecognizer extends StateMachine {
 
-public class SpeechRecognizer extends StateMachine {
-    static Logger logger = LoggerFactory.getLogger(SpeechRecognizer.class);
+    static Logger logger = LoggerFactory.getLogger(VirtualNumberRecognizer.class);
 
     /**
      * 上下文信息
@@ -49,11 +52,11 @@ public class SpeechRecognizer extends StateMachine {
     protected Connection conn;
 
     private Credential credential;
-    private SpeechRecognizerRequest request;
+    private VirtualNumberRecognizerRequest request;
 
     private SpeechClient client;
 
-    private SpeechRecognizerListener listener;
+    private VirtualNumberRecognizerListener listener;
 
     public Credential getCredential() {
         return credential;
@@ -63,11 +66,11 @@ public class SpeechRecognizer extends StateMachine {
         this.credential = credential;
     }
 
-    public SpeechRecognizerRequest getRequest() {
+    public VirtualNumberRecognizerRequest getRequest() {
         return request;
     }
 
-    public void setRequest(SpeechRecognizerRequest request) {
+    public void setRequest(VirtualNumberRecognizerRequest request) {
         this.request = request;
     }
 
@@ -79,15 +82,15 @@ public class SpeechRecognizer extends StateMachine {
         this.client = client;
     }
 
-    public SpeechRecognizerListener getListener() {
+    public VirtualNumberRecognizerListener getListener() {
         return listener;
     }
 
-    public void setListener(SpeechRecognizerListener listener) {
+    public void setListener(VirtualNumberRecognizerListener listener) {
         this.listener = listener;
     }
 
-    public SpeechRecognizer(SpeechClient client, Credential credential, SpeechRecognizerRequest request, SpeechRecognizerListener listener) throws Exception {
+    public VirtualNumberRecognizer(SpeechClient client, Credential credential, VirtualNumberRecognizerRequest request, VirtualNumberRecognizerListener listener) throws Exception {
         Optional.ofNullable(client).orElseThrow(() -> new RuntimeException("client cannot be null"));
         Optional.ofNullable(request).orElseThrow(() -> new RuntimeException("request cannot be null"));
         Optional.ofNullable(credential).orElseThrow(() -> new RuntimeException("credential cannot be null"));
@@ -101,7 +104,7 @@ public class SpeechRecognizer extends StateMachine {
         this.listener = listener;
         stopLatch = new CountDownLatch(1);
         startLatch = new CountDownLatch(1);
-        listener.setSpeechRecognizer(this);
+        listener.setVirtualNumberRecognizer(this);
     }
 
     /**
@@ -110,7 +113,7 @@ public class SpeechRecognizer extends StateMachine {
      * @throws Exception
      */
     public void start() throws Exception {
-        start(AsrConstant.DEFAULT_START_TIMEOUT_MILLISECONDS);
+        start(VirtualNumberConstant.DEFAULT_START_TIMEOUT_MILLISECONDS);
     }
 
     /**
@@ -128,10 +131,10 @@ public class SpeechRecognizer extends StateMachine {
         request.setTimestamp(System.currentTimeMillis() / 1000);
         request.setExpired(System.currentTimeMillis() / 1000 + 86400); // 1天后过期
         Map<String, Object> sortParamMap = request.toTreeMap();
-        String sign = SignHelper.createSign(AsrConstant.DEFAULT_RT_SIGN_PREFIX, SignHelper.createUrl(sortParamMap), credential.getAppid(), credential.getSecretKey());
-        String url = SignHelper.createRequestUrl(AsrConstant.DEFAULT_RT_REQ_URL, SignHelper.createUrl(SignHelper.encode(sortParamMap)), credential.getAppid());
+        String sign = SignHelper.createSign(VirtualNumberConstant.DEFAULT_RT_SIGN_PREFIX, SignHelper.createUrl(sortParamMap), credential.getAppid(), credential.getSecretKey());
+        String url = SignHelper.createRequestUrl(VirtualNumberConstant.DEFAULT_RT_REQ_URL, SignHelper.createUrl(SignHelper.encode(sortParamMap)), credential.getAppid());
         logger.debug(url);
-        ConnectionProfile connectionProfile = new ConnectionProfile(sign, url, AsrConstant.DEFAULT_HOST, this.credential.getToken());
+        ConnectionProfile connectionProfile = new ConnectionProfile(sign, url, VirtualNumberConstant.DEFAULT_HOST, this.credential.getToken());
         this.conn = client.connect(connectionProfile, this.listener);
         Map<String, Long> network = new HashMap<>();
         network.put(Constant.CONNECTING_LATENCY_KEY, conn.getConnectingLatency());
@@ -186,7 +189,7 @@ public class SpeechRecognizer extends StateMachine {
      * @throws Exception
      */
     public void stop() throws Exception {
-        stop(AsrConstant.DEFAULT_START_TIMEOUT_MILLISECONDS);
+        stop(VirtualNumberConstant.DEFAULT_START_TIMEOUT_MILLISECONDS);
     }
 
     /**
@@ -195,8 +198,8 @@ public class SpeechRecognizer extends StateMachine {
      * @throws Exception
      */
     public void stop(long milliSeconds) throws Exception {
-        if (state == STATE_COMPLETE) {
-            logger.info("state is {} stop message is discarded", STATE_COMPLETE);
+        if (state == STATE_COMPLETE || state == STATE_CLOSED) {
+            logger.info("state is {} stop message is discarded", state);
             return;
         }
         state.checkStop();
@@ -270,6 +273,4 @@ public class SpeechRecognizer extends StateMachine {
             stopLatch.countDown();
         }
     }
-
 }
-

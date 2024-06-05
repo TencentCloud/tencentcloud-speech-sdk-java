@@ -42,7 +42,6 @@ import okhttp3.WebSocket;
 import okhttp3.WebSocketListener;
 import okio.ByteString;
 import org.apache.commons.lang3.StringUtils;
-
 public class VirtualNumberRecognizer {
 
     private VirtualNumberServerConfig serverConfig;

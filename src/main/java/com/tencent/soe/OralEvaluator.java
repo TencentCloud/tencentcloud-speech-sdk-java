@@ -13,8 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.tencent.asrv2;
-
+package com.tencent.soe;
 
 import com.google.gson.Gson;
 import com.tencent.core.help.SignHelper;
@@ -26,11 +25,11 @@ import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import static com.tencent.core.ws.StateMachine.State.*;
+import static com.tencent.core.ws.StateMachine.State.STATE_COMPLETE;
 
+public class OralEvaluator extends StateMachine {
 
-public class SpeechRecognizer extends StateMachine {
-    static Logger logger = LoggerFactory.getLogger(SpeechRecognizer.class);
+    static Logger logger = LoggerFactory.getLogger(OralEvaluator.class);
 
     /**
      * 上下文信息
@@ -49,11 +48,11 @@ public class SpeechRecognizer extends StateMachine {
     protected Connection conn;
 
     private Credential credential;
-    private SpeechRecognizerRequest request;
+    private OralEvaluationRequest request;
 
     private SpeechClient client;
 
-    private SpeechRecognizerListener listener;
+    private OralEvaluationListener listener;
 
     public Credential getCredential() {
         return credential;
@@ -63,11 +62,11 @@ public class SpeechRecognizer extends StateMachine {
         this.credential = credential;
     }
 
-    public SpeechRecognizerRequest getRequest() {
+    public OralEvaluationRequest getRequest() {
         return request;
     }
 
-    public void setRequest(SpeechRecognizerRequest request) {
+    public void setRequest(OralEvaluationRequest request) {
         this.request = request;
     }
 
@@ -79,15 +78,15 @@ public class SpeechRecognizer extends StateMachine {
         this.client = client;
     }
 
-    public SpeechRecognizerListener getListener() {
+    public OralEvaluationListener getListener() {
         return listener;
     }
 
-    public void setListener(SpeechRecognizerListener listener) {
+    public void setListener(OralEvaluationListener listener) {
         this.listener = listener;
     }
 
-    public SpeechRecognizer(SpeechClient client, Credential credential, SpeechRecognizerRequest request, SpeechRecognizerListener listener) throws Exception {
+    public OralEvaluator(SpeechClient client, Credential credential, OralEvaluationRequest request, OralEvaluationListener listener) throws Exception {
         Optional.ofNullable(client).orElseThrow(() -> new RuntimeException("client cannot be null"));
         Optional.ofNullable(request).orElseThrow(() -> new RuntimeException("request cannot be null"));
         Optional.ofNullable(credential).orElseThrow(() -> new RuntimeException("credential cannot be null"));
@@ -101,7 +100,7 @@ public class SpeechRecognizer extends StateMachine {
         this.listener = listener;
         stopLatch = new CountDownLatch(1);
         startLatch = new CountDownLatch(1);
-        listener.setSpeechRecognizer(this);
+        listener.setOralEvaluation(this);
     }
 
     /**
@@ -110,7 +109,7 @@ public class SpeechRecognizer extends StateMachine {
      * @throws Exception
      */
     public void start() throws Exception {
-        start(AsrConstant.DEFAULT_START_TIMEOUT_MILLISECONDS);
+        start(OralEvalConstant.DEFAULT_START_TIMEOUT_MILLISECONDS);
     }
 
     /**
@@ -128,10 +127,11 @@ public class SpeechRecognizer extends StateMachine {
         request.setTimestamp(System.currentTimeMillis() / 1000);
         request.setExpired(System.currentTimeMillis() / 1000 + 86400); // 1天后过期
         Map<String, Object> sortParamMap = request.toTreeMap();
-        String sign = SignHelper.createSign(AsrConstant.DEFAULT_RT_SIGN_PREFIX, SignHelper.createUrl(sortParamMap), credential.getAppid(), credential.getSecretKey());
-        String url = SignHelper.createRequestUrl(AsrConstant.DEFAULT_RT_REQ_URL, SignHelper.createUrl(SignHelper.encode(sortParamMap)), credential.getAppid());
+        String sign = SignHelper.createSign(OralEvalConstant.DEFAULT_ORAL_EVAL_SIGN_PREFIX, SignHelper.createUrl(sortParamMap), credential.getAppid(), credential.getSecretKey());
+        Map<String, Object> encodeParam = SignHelper.encode(sortParamMap);
+        String url = SignHelper.createRequestUrl(OralEvalConstant.DEFAULT_ORAL_EVAL_REQ_URL, SignHelper.createUrl(encodeParam), credential.getAppid());
         logger.debug(url);
-        ConnectionProfile connectionProfile = new ConnectionProfile(sign, url, AsrConstant.DEFAULT_HOST, this.credential.getToken());
+        ConnectionProfile connectionProfile = new ConnectionProfile(sign, url, OralEvalConstant.DEFAULT_ORAL_EVAL_HOST, this.credential.getToken());
         this.conn = client.connect(connectionProfile, this.listener);
         Map<String, Long> network = new HashMap<>();
         network.put(Constant.CONNECTING_LATENCY_KEY, conn.getConnectingLatency());
@@ -186,7 +186,7 @@ public class SpeechRecognizer extends StateMachine {
      * @throws Exception
      */
     public void stop() throws Exception {
-        stop(AsrConstant.DEFAULT_START_TIMEOUT_MILLISECONDS);
+        stop(OralEvalConstant.DEFAULT_START_TIMEOUT_MILLISECONDS);
     }
 
     /**
@@ -270,6 +270,4 @@ public class SpeechRecognizer extends StateMachine {
             stopLatch.countDown();
         }
     }
-
 }
-

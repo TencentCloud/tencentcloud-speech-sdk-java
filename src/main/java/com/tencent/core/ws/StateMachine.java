@@ -10,6 +10,10 @@ public class StateMachine {
     private static Logger logger = LoggerFactory.getLogger(StateMachine.class);
     protected State state = State.STATE_INIT;
 
+    public State getState() {
+        return state;
+    }
+
     public enum State {
         /**
          * 错误状态

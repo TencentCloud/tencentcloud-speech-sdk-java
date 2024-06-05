@@ -37,6 +37,9 @@ import okhttp3.internal.Util;
 import okhttp3.logging.HttpLoggingInterceptor;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLSession;
+
 public class WsClientService {
 
     protected OkHttpClient client;
@@ -85,7 +88,12 @@ public class WsClientService {
                         new InetSocketAddress(config.getProxyHost(), config.getProxyPort())));
             }
         }
-        client = okHttpBuilder.build();
+        client = okHttpBuilder.hostnameVerifier(new HostnameVerifier() {
+            @Override
+            public boolean verify(String hostname, SSLSession session) {
+                return true;
+            }
+        }).build();
         client.dispatcher().setMaxRequests(config.getWsMaxRequests());
         client.dispatcher().setMaxRequestsPerHost(config.getWsMaxRequestsPerHost());
     }

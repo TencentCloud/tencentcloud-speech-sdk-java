@@ -44,7 +44,7 @@ import okhttp3.WebSocket;
 import okhttp3.WebSocketListener;
 import okio.ByteString;
 import org.apache.commons.lang3.StringUtils;
-
+@Deprecated
 public class SpeechWsSynthesizer {
 
     private SpeechWsSynthesisServerConfig serverConfig;
