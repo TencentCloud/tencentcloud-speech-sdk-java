@@ -34,6 +34,11 @@ public class SpeechClient {
      * 连接建立默认超时时间,单位毫秒
      */
     public static int connectTimeout = 5000;
+    /**
+     * frame length
+     */
+    public static int maxFramePayloadLength = 65536 * 50;
+
 
     public SpeechClient(String url) {
         try {
@@ -56,10 +61,10 @@ public class SpeechClient {
     public Connection connect(ConnectionProfile connectionProfile, ConnectionListener listener) throws Exception {
         for (int i = 0; i <= connectMaxTryTimes; i++) {
             try {
-                return client.connect(connectionProfile, listener, connectTimeout);
+                return client.connect(connectionProfile, listener, connectTimeout, maxFramePayloadLength);
             } catch (Exception e) {
                 if (i == 2) {
-                    logger.error("failed to connect to server after {} tries,error msg is :{}",i, e.getMessage());
+                    logger.error("failed to connect to server after {} tries,error msg is :{}", i, e.getMessage());
                     throw e;
                 }
                 Thread.sleep(100);

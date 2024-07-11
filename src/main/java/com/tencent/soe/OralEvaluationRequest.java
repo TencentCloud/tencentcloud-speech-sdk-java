@@ -49,30 +49,35 @@ public class OralEvaluationRequest extends CommonRequest {
     @SerializedName("nonce")
     protected Integer nonce;
     /**
-     * 引擎模型类型电话场景:soe_16k_zh:中文; soe_16k_en:英文;
+     * 引擎模型类型电话场景：16k_zh：中文； 16k_en：英文
      */
     @SerializedName("server_engine_type")
     protected String serverEngineType;
 
     /**
-     * 音频流识别全局唯一标识，一个 websocket 连接对应一个，用户自己生成（推荐使用 uuid），最长128位
+     * 音频流识别全局唯一标识，一个 websocket 连接对应一个，用户自己生成（推荐使用 uuid），最长128位。
      */
     @SerializedName("voice_id")
     protected String voiceId;
 
     /**
-     * 语音编码方式，可选，默认值为0。0:pcm;1: wav;2:mp3;3:silk;4:speex(sp);5: opus(opus 格式音频流封装说明);6:m4a (每个分片须是一个完整的 m4a 音频);8:aac
+     * 语音编码方式，可选，默认值为0。0：pcm；1：wav；2：mp3；4：speex(sp)
      */
     @SerializedName("voice_format")
     protected Integer voiceFormat;
     /**
-     * 输入文本模式 0: 普通文本(默认)1:音素结构文 本
+     * 输入文本模式   0: 普通文本（默认）1：音素结构文本
      */
     @SerializedName("text_mode")
     protected Integer textMode;
     /**
-     * 被评估语音对应的文本，仅支持中文和英文。句子 模式下不超过 30个 单词或者中文文字， 段落模式不超过 120 个单词或者中文文字，中文 评估使用 utf-8 编码，自由说模式RefText可以不 填。关于RefText的文本键入要求， 请参考评测模式介绍。如需要在评测模式下使用自 定义注音(支持中英文)，可以通过设置 「TextMode」参数实现，设置方式请参考音素标 注。
-     * 示例值:apple
+     * 被评估语音对应的文本，仅支持中文和英文。
+     * 句子模式下不超过 30个 单词或者中文文字。
+     * 段落模式不超过 120 个单词或者中文文字。
+     * 中文评估使用 utf-8 编码。
+     * 自由说模式 RefText 可以不填。关于 RefText 的文本键入要求，请参考评测模式介绍。
+     * 如需要在评测模式下使用自定义注音（支持中英文），可以通过设置 TextMode 参数实现，设置方式请参考音素标注。
+     * 示例值：apple
      */
     @SerializedName("ref_text")
     protected String refText;
@@ -82,21 +87,27 @@ public class OralEvaluationRequest extends CommonRequest {
     @SerializedName("keyword")
     protected String keyword;
     /**
-     * 评测模式 0:单词/单字模式(中文评测模式下为单字模式) 1:句子模式
-     * 2:段落模式
-     * 3:自由说模式
-     * 4:单词音素纠错模式
-     * 5:情景评测模式
-     * 6:句子多分支评测模式
-     * 7:单词实时评测模式
-     * 8:拼音评测模式 关于每种评测模式的详细介绍，以及适用场景，请 参考评测模式介绍。
-     * 示例值:1
+     * 评测模式
+     * 0：单词/单字模式（中文评测模式下为单字模式）
+     * 1：句子模式
+     * 2：段落模式
+     * 3：自由说模式
+     * 4：单词音素纠错模式
+     * 5：情景评测模式
+     * 6：句子多分支评测模式
+     * 7：单词实时评测模式
+     * 8：拼音评测模式
+     * 关于每种评测模式的详细介绍，以及适用场景，请参考评测模式介绍。
+     * 示例值：1
      */
     @SerializedName("eval_mode")
     protected Integer evalMode;
     /**
-     * 评价苛刻指数。取值为[1.0 - 4.0]范围内的浮点 数，用于平滑不同年龄段的分数。 1.0:适用于最小年龄段用户，一般对应儿童应用 场景; 4.0:适用于最高年龄段用户，一般对应成人严格 打分场景。 苛刻度影响范围参考:苛刻度影响范围
-     * 示例值:1.0
+     * 评价苛刻指数。取值为[1.0 - 4.0]范围内的浮点数，用于平滑不同年龄段的分数。
+     * 1.0：适用于最小年龄段用户，一般对应儿童应用场景；
+     * 4.0：适用于最高年龄段用户，一般对应成人严格打分场景。
+     * 苛刻度影响范围请参考 苛刻指数介绍
+     * 示例值：1.0
      */
     @SerializedName("score_coeff")
     protected Double scoreCoeff;

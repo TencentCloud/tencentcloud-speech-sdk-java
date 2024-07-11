@@ -81,7 +81,7 @@ public class WebSocketClient {
     }
 
 
-    public Connection connect(ConnectionProfile connectionProfile, ConnectionListener listener, int connectionTimeout) throws Exception {
+    public Connection connect(ConnectionProfile connectionProfile, ConnectionListener listener, int connectionTimeout,int maxFramePayloadLength) throws Exception {
         bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectionTimeout);
         HttpHeaders httpHeaders = new DefaultHttpHeaders();
         httpHeaders.set(Constant.HEADER_AUTHORIZATION, connectionProfile.getSign());
@@ -90,7 +90,7 @@ public class WebSocketClient {
             httpHeaders.set(HEADER_TOKEN, connectionProfile.getToken());
         }
         URI websocketURI = new URI(connectionProfile.getUrl());
-        WebSocketClientHandshaker handshaker = WebSocketClientHandshakerFactory.newHandshaker(websocketURI, WebSocketVersion.V13, null, true, httpHeaders, 65536 * 3);
+        WebSocketClientHandshaker handshaker = WebSocketClientHandshakerFactory.newHandshaker(websocketURI, WebSocketVersion.V13, null, true, httpHeaders, maxFramePayloadLength);
         long start = System.currentTimeMillis();
         Channel channel = bootstrap.connect(websocketURI.getHost(), port).sync().channel();
         long connectingTime = System.currentTimeMillis() - start;
