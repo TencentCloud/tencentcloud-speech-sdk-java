@@ -37,7 +37,7 @@ public class GlobalConfig {
     /**
      * 不建议修改此值
      */
-    private static String sdkVer = "1.0.18";
+    private static String sdkVer = "1.0.49";
 
     public static String getSdkVer() {
         return sdkVer;

@@ -44,7 +44,8 @@ public class CommonRequest {
         for (Field field : fields) {
             field.setAccessible(true);
             try {
-                if (!field.getName().equals("extendParam") && field.get(this) != null) {
+                if (!field.getName().equals("extendParam") && field.get(this) != null &&
+                        field.getAnnotation(SerializedName.class) != null) {
                     sortedMap.put(field.getAnnotation(SerializedName.class).value(), field.get(this));
                 }
             } catch (IllegalAccessException e) {
