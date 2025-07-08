@@ -15,7 +15,9 @@ public class TtsConstant {
     // start、stop方法countdown超时时间 单位ms
     public static int DEFAULT_START_TIMEOUT_MILLISECONDS = 60000;
 
-    public static int DEFAULT_TTS_FLOWING_START_TIMEOUT_MILLISECONDS = 0;
+    public static int DEFAULT_TTS_FLOWING_STOP_TIMEOUT_MILLISECONDS = 0;
+
+    public static int DEFAULT_TTS_FLOWING_CLOSE_SLEEP_MILLISECONDS = 500;
 
     private static String FlowingSpeechSynthesizer_ACTION_SYNTHESIS ="ACTION_SYNTHESIS";
     private static String FlowingSpeechSynthesizer_ACTION_COMPLETE ="ACTION_COMPLETE";

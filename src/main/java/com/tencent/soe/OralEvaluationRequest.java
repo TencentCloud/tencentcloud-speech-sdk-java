@@ -1,18 +1,3 @@
-/*
- * Copyright (c) 2017-2018 THL A29 Limited, a Tencent company. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package com.tencent.soe;
 
 import com.google.gson.annotations.SerializedName;
@@ -118,6 +103,16 @@ public class OralEvaluationRequest extends CommonRequest {
     @SerializedName("sentence_info_enabled")
     protected Integer sentenceInfoEnabled;
 
+    /**
+     * 是否为录音识别模式标识
+     * 0:  实时识别（默认）
+     * 1:  录音识别
+     * 录音识别下可发送单个大长度分片(上限300s）
+     * 单次连接只能发一个分片,得到识别结果后需要关闭此条websocket连接，再次识别需要重新建立连接
+     */
+    @SerializedName("rec_mode")
+    protected Integer recMode;
+
     public String getSecretid() {
         return secretid;
     }
@@ -222,4 +217,11 @@ public class OralEvaluationRequest extends CommonRequest {
         this.sentenceInfoEnabled = sentenceInfoEnabled;
     }
 
+    public Integer getRecMode() {
+        return recMode;
+    }
+
+    public void setRecMode(Integer recMode) {
+        this.recMode = recMode;
+    }
 }

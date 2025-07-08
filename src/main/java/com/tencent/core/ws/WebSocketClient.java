@@ -1,18 +1,3 @@
-/*
- * Copyright (c) 2017-2018 THL A29 Limited, a Tencent company. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package com.tencent.core.ws;
 
 import io.netty.bootstrap.Bootstrap;
@@ -20,10 +5,7 @@ import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.codec.http.DefaultHttpHeaders;
-import io.netty.handler.codec.http.HttpClientCodec;
-import io.netty.handler.codec.http.HttpHeaders;
-import io.netty.handler.codec.http.HttpObjectAggregator;
+import io.netty.handler.codec.http.*;
 import io.netty.handler.codec.http.websocketx.WebSocketClientHandshaker;
 import io.netty.handler.codec.http.websocketx.WebSocketClientHandshakerFactory;
 import io.netty.handler.codec.http.websocketx.WebSocketVersion;
@@ -36,6 +18,8 @@ import org.slf4j.LoggerFactory;
 
 import javax.net.ssl.SSLException;
 import java.net.URI;
+import java.util.Base64;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
@@ -81,13 +65,27 @@ public class WebSocketClient {
     }
 
 
-    public Connection connect(ConnectionProfile connectionProfile, ConnectionListener listener, int connectionTimeout,int maxFramePayloadLength) throws Exception {
+    public Connection connect(ConnectionProfile connectionProfile, ConnectionListener listener, int connectionTimeout, int maxFramePayloadLength) throws Exception {
         bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectionTimeout);
         HttpHeaders httpHeaders = new DefaultHttpHeaders();
-        httpHeaders.set(Constant.HEADER_AUTHORIZATION, connectionProfile.getSign());
+        httpHeaders.set(Constant.SDK_VERSION, Constant.SDK);
         httpHeaders.set(Constant.HEADER_HOST, connectionProfile.getHost());
         if (connectionProfile.getToken() != null && !Objects.equals(connectionProfile.getToken(), "")) {
             httpHeaders.set(HEADER_TOKEN, connectionProfile.getToken());
+        }
+        httpHeaders.set(Constant.HEADER_AUTHORIZATION, connectionProfile.getSign());
+        ProxyProfile proxyProfile = this.websocketProfile.getProxyProfile();
+        if (proxyProfile != null) {
+            if (!Objects.equals(proxyProfile.getProxyUserName(), "")) {
+                String credentials = proxyProfile.getProxyUserName() + ":" + proxyProfile.getProxyPwd();
+                String authorization = "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes());
+                httpHeaders.set(HttpHeaderNames.PROXY_AUTHORIZATION, authorization);
+            }
+            if (proxyProfile.getProxyHeader() != null) {
+                for (Map.Entry<String, String> entry : proxyProfile.getProxyHeader().entrySet()) {
+                    httpHeaders.set(entry.getKey(), entry.getValue());
+                }
+            }
         }
         URI websocketURI = new URI(connectionProfile.getUrl());
         WebSocketClientHandshaker handshaker = WebSocketClientHandshakerFactory.newHandshaker(websocketURI, WebSocketVersion.V13, null, true, httpHeaders, maxFramePayloadLength);

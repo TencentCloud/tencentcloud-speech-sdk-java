@@ -1,18 +1,3 @@
-/*
- * Copyright (c) 2017-2018 THL A29 Limited, a Tencent company. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package com.tencent.core.ws;
 
 import io.netty.channel.*;
@@ -91,15 +76,14 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
         Channel ch = ctx.channel();
         if (!handshaker.isHandshakeComplete()) {
             try {
-                FullHttpResponse response = (FullHttpResponse)msg;
+                FullHttpResponse response = (FullHttpResponse) msg;
                 handshaker.finishHandshake(ch, response);
                 handshakeFuture.setSuccess();
-                logger.debug("WebSocket Client connected! response headers:{}",
-                        response.headers());
+                logger.debug("WebSocket Client connected! response headers:{}", response.headers());
             } catch (WebSocketHandshakeException e) {
-                FullHttpResponse res = (FullHttpResponse)msg;
-                String errorMsg = String.format("WebSocket Client failed to connect,status:%s,reason:%s", res.status(),
-                        res.content().toString(CharsetUtil.UTF_8));
+                FullHttpResponse res = (FullHttpResponse) msg;
+                String errorMsg = String.format("WebSocket Client failed to connect,status:%s,reason:%s",
+                        res.status(), res.content().toString(CharsetUtil.UTF_8));
                 logger.error(errorMsg);
                 handshakeFuture.setFailure(new Exception(errorMsg));
             }
@@ -107,24 +91,23 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
         }
 
         if (msg instanceof FullHttpResponse) {
-            FullHttpResponse response = (FullHttpResponse)msg;
-            throw new IllegalStateException(
-                    "Unexpected FullHttpResponse (getStatus=" + response.status() +
-                            ", content=" + response.content().toString(CharsetUtil.UTF_8) + ')');
+            FullHttpResponse response = (FullHttpResponse) msg;
+            throw new IllegalStateException("Unexpected FullHttpResponse (getStatus=" + response.status() +
+                    ", content=" + response.content().toString(CharsetUtil.UTF_8) + ')');
         }
 
-        WebSocketFrame frame = (WebSocketFrame)msg;
+        WebSocketFrame frame = (WebSocketFrame) msg;
         if (frame instanceof TextWebSocketFrame) {
-            TextWebSocketFrame textFrame = (TextWebSocketFrame)frame;
+            TextWebSocketFrame textFrame = (TextWebSocketFrame) frame;
             listener.onMessage(textFrame.text());
         } else if (frame instanceof BinaryWebSocketFrame) {
-            BinaryWebSocketFrame binFrame = (BinaryWebSocketFrame)frame;
+            BinaryWebSocketFrame binFrame = (BinaryWebSocketFrame) frame;
             listener.onMessage(binFrame.content().nioBuffer());
         } else if (frame instanceof PongWebSocketFrame) {
             logger.debug("WebSocket Client received pong");
         } else if (frame instanceof CloseWebSocketFrame) {
             logger.debug("receive close frame");
-            listener.onClose(((CloseWebSocketFrame)frame).statusCode(), ((CloseWebSocketFrame)frame).reasonText());
+            listener.onClose(((CloseWebSocketFrame) frame).statusCode(), ((CloseWebSocketFrame) frame).reasonText());
             ch.close();
         }
     }
