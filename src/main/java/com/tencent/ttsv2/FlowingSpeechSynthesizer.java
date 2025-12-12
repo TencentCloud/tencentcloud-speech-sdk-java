@@ -163,6 +163,22 @@ public class FlowingSpeechSynthesizer extends StateMachine {
         }
     }
 
+    public void reset() {
+        if (state == STATE_COMPLETE) {
+            logger.info("state is {} stop send", STATE_COMPLETE);
+            return;
+        }
+        state.checkSend();
+        try {
+            String message = newWsRequestMessage("", TtsConstant.getFlowingSpeechSynthesizer_ACTION_RESET());
+            conn.sendText(message);
+            lastSendTime = System.currentTimeMillis();
+        } catch (Exception e) {
+            logger.error("fail to reset ,current_task_id:{},state:{}", sessionId, state, e);
+            throw new RuntimeException(e);
+        }
+    }
+
     /**
      * 合成文本message
      *

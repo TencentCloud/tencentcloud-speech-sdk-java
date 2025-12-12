@@ -52,15 +52,11 @@ public class FlashRecognizer {
     static {
         final SSLConnectionSocketFactory sslsf;
         try {
-            sslsf = new SSLConnectionSocketFactory(SSLContext.getDefault(),
-                    NoopHostnameVerifier.INSTANCE);
+            sslsf = new SSLConnectionSocketFactory(SSLContext.getDefault(), NoopHostnameVerifier.INSTANCE);
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         }
-        final Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
-                .register("http", new PlainConnectionSocketFactory())
-                .register("https", sslsf)
-                .build();
+        final Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create().register("http", new PlainConnectionSocketFactory()).register("https", sslsf).build();
         PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager(registry);
         cm.setMaxTotal(SpeechRecognitionSysConfig.MaxTotal);
         cm.setDefaultMaxPerRoute(SpeechRecognitionSysConfig.defaultMaxPerRoute);
@@ -68,15 +64,8 @@ public class FlashRecognizer {
         if (SpeechRecognitionSysConfig.httpUseProxy) {
             rb.setProxy(SpeechRecognitionSysConfig.httpHostProxy);
         }
-        RequestConfig requestConfig = rb.setConnectTimeout(SpeechRecognitionSysConfig.flashConnectTimeout)
-                .setSocketTimeout(SpeechRecognitionSysConfig.flashSocketTimeout)
-                .setConnectionRequestTimeout(SpeechRecognitionSysConfig.flashConnectionRequestTimeout)
-                .build();
-        client = HttpClients.custom().setConnectionManager(cm)
-                .setSSLSocketFactory(sslsf)
-                .setConnectionReuseStrategy(new NoConnectionReuseStrategy())
-                .setRetryHandler(new DefaultHttpRequestRetryHandler(3, true))
-                .setDefaultRequestConfig(requestConfig).build();
+        RequestConfig requestConfig = rb.setConnectTimeout(SpeechRecognitionSysConfig.flashConnectTimeout).setSocketTimeout(SpeechRecognitionSysConfig.flashSocketTimeout).setConnectionRequestTimeout(SpeechRecognitionSysConfig.flashConnectionRequestTimeout).build();
+        client = HttpClients.custom().setConnectionManager(cm).setSSLSocketFactory(sslsf).setConnectionReuseStrategy(new NoConnectionReuseStrategy()).setRetryHandler(new DefaultHttpRequestRetryHandler(3, true)).setDefaultRequestConfig(requestConfig).build();
 
     }
 
@@ -91,9 +80,6 @@ public class FlashRecognizer {
      * @return FlashRecognitionResponse
      */
     public FlashRecognitionResponse recognize(FlashRecognitionRequest request, byte[] data) {
-        if (data == null || data.length == 0) {
-            throw new RuntimeException("write data is null!!!");
-        }
         request.setTimestamp(System.currentTimeMillis() / 1000);
         Map<String, Object> paramMap = speechRecognitionSignService.getFlashParams(config, request);
         String paramUrl = SignHelper.createUrl(paramMap);
@@ -112,7 +98,9 @@ public class FlashRecognizer {
             if (StringUtils.isNotEmpty(config.getToken())) {
                 httpPost.addHeader("X-TC-Token", config.getToken());
             }
-            httpPost.setEntity(new ByteArrayEntity(data));
+            if (data != null) {
+                httpPost.setEntity(new ByteArrayEntity(data));
+            }
             httpResponse = client.execute(httpPost, HttpClientContext.create());
             String responseStr = EntityUtils.toString(httpResponse.getEntity(), "utf-8");
             FlashRecognitionResponse response = JsonUtil.fromJson(responseStr, FlashRecognitionResponse.class);
@@ -123,8 +111,7 @@ public class FlashRecognizer {
             response.setMessage(Tutils.getStackTraceAsString(e));
             response.setRequestId(RandomUtil.randomString(11));
             response.setCode(-1);
-            ReportService.report(false, String.valueOf(-1), config, response.getRequestId(),
-                    request, response, config.getFlashUrl(), e.getMessage());
+            ReportService.report(false, String.valueOf(-1), config, response.getRequestId(), request, response, config.getFlashUrl(), e.getMessage());
             return response;
         } finally {
             try {

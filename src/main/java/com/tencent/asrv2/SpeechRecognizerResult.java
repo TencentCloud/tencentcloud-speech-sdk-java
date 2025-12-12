@@ -62,6 +62,13 @@ public class SpeechRecognizerResult {
     @SerializedName(value = "word_list")
     private List<Word> wordList;
 
+    @SerializedName(value = "speaker_info")
+    private List<SpeakerMessage> speakerInfo;
+
+
+    @SerializedName(value = "emotion_type")
+    private List<String> emotionType;
+
     public Integer getSliceType() {
         return sliceType;
     }
@@ -118,6 +125,22 @@ public class SpeechRecognizerResult {
         this.wordList = wordList;
     }
 
+    public List<SpeakerMessage> getSpeakerInfo() {
+        return speakerInfo;
+    }
+
+    public void setSpeakerInfo(List<SpeakerMessage> speakerInfo) {
+        this.speakerInfo = speakerInfo;
+    }
+
+    public List<String> getEmotionType() {
+        return emotionType;
+    }
+
+    public void setEmotionType(List<String> emotionType) {
+        this.emotionType = emotionType;
+    }
+
     public static class Word {
         /**
          * 表示这个词的内容
@@ -170,6 +193,57 @@ public class SpeechRecognizerResult {
 
         public void setStableFlag(Integer stableFlag) {
             this.stableFlag = stableFlag;
+        }
+    }
+
+    public static class SpeakerMessage {
+
+        /**
+         * 表示该词在整个音频中的起始时间，
+         */
+        @SerializedName(value = "start_time")
+        private Long startTime;
+
+        /**
+         * 表示该词在整个音频中的结束时间，
+         */
+        @SerializedName(value = "end_time")
+        private Long endTime;
+        @SerializedName(value = "speaker_id")
+        private Integer speakerId;
+        @SerializedName(value = "voice_text_str")
+        private String voiceTextStr;
+
+        public Long getStartTime() {
+            return startTime;
+        }
+
+        public void setStartTime(Long startTime) {
+            this.startTime = startTime;
+        }
+
+        public Long getEndTime() {
+            return endTime;
+        }
+
+        public void setEndTime(Long endTime) {
+            this.endTime = endTime;
+        }
+
+        public Integer getSpeakerId() {
+            return speakerId;
+        }
+
+        public void setSpeakerId(Integer speakerId) {
+            this.speakerId = speakerId;
+        }
+
+        public String getVoiceTextStr() {
+            return voiceTextStr;
+        }
+
+        public void setVoiceTextStr(String voiceTextStr) {
+            this.voiceTextStr = voiceTextStr;
         }
     }
 }

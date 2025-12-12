@@ -22,11 +22,17 @@ public class TtsConstant {
     private static String FlowingSpeechSynthesizer_ACTION_SYNTHESIS ="ACTION_SYNTHESIS";
     private static String FlowingSpeechSynthesizer_ACTION_COMPLETE ="ACTION_COMPLETE";
 
+    private static String FlowingSpeechSynthesizer_ACTION_RESET ="ACTION_RESET";
+
     public static String getFlowingSpeechSynthesizer_ACTION_SYNTHESIS() {
         return FlowingSpeechSynthesizer_ACTION_SYNTHESIS;
     }
 
     public static String getFlowingSpeechSynthesizer_ACTION_COMPLETE() {
         return FlowingSpeechSynthesizer_ACTION_COMPLETE;
+    }
+
+    public static String getFlowingSpeechSynthesizer_ACTION_RESET() {
+        return FlowingSpeechSynthesizer_ACTION_RESET;
     }
 }

@@ -190,7 +190,50 @@ public class SpeechRecognizerRequest extends CommonRequest {
     @SerializedName("input_sample_rate")
     private Integer inputSampleRate;
 
+    @SerializedName("speaker_diarization")
+    private Integer speakerDiarization;
 
+    /**
+     * 增值付费功能情绪识别能力（目前仅支持 16k_zh,8k_zh）
+     * 0：不开启。
+     * 1：开启情绪识别，但不在文本展示情绪标签。
+     * 2：开启情绪识别，并且在文本展示情绪标签。
+     * 默认值为0
+     * 支持的情绪分类为：高兴、伤心、愤怒。
+     * ﻿
+     * 注意：
+     * 本功能为增值服务，需将参数设置为1或2时方可按对应方式生效。
+     * 如果传入参数值1或2，需确保账号已购买情绪识别资源包，或账号开启后付费；若当前账号已开启后付费功能，并传入参数值1或2，将自动计费。
+     * 参数设置为0时，无需购买资源包，也不会消耗情绪识别对应资源。
+     * 示例值：0
+     */
+    @SerializedName("emotion_recognition")
+    private Integer emotionRecognition;
+
+    /**
+     * 替换词汇表 ID,  适用于热词和自学习场景也无法解决的极端 case 词组，会对识别结果强制替换。具体可参考（词汇替换） ；强制替换功能可能会影响正常识别结果，请谨慎使用。
+     * ﻿
+     * 注意：
+     * 本功能配置完成后，预计在10分钟后生效。
+     */
+    @SerializedName("replace_text_id")
+    private String replaceTextId;
+
+    public Integer getEmotionRecognition() {
+        return emotionRecognition;
+    }
+
+    public void setEmotionRecognition(Integer emotionRecognition) {
+        this.emotionRecognition = emotionRecognition;
+    }
+
+    public String getReplaceTextId() {
+        return replaceTextId;
+    }
+
+    public void setReplaceTextId(String replaceTextId) {
+        this.replaceTextId = replaceTextId;
+    }
 
     protected String getSecretid() {
         return secretid;
@@ -366,6 +409,14 @@ public class SpeechRecognizerRequest extends CommonRequest {
 
     public void setInputSampleRate(Integer inputSampleRate) {
         this.inputSampleRate = inputSampleRate;
+    }
+
+    public Integer getSpeakerDiarization() {
+        return speakerDiarization;
+    }
+
+    public void setSpeakerDiarization(Integer speakerDiarization) {
+        this.speakerDiarization = speakerDiarization;
     }
 
     public static SpeechRecognizerRequest init() {

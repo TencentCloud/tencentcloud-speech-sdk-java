@@ -48,7 +48,7 @@ public class SpeechClient {
             try {
                 return client.connect(connectionProfile, listener, connectTimeout, maxFramePayloadLength);
             } catch (Exception e) {
-                if (i == 2) {
+                if (i == connectMaxTryTimes) {
                     logger.error("failed to connect to server after {} tries,error msg is :{}", i, e.getMessage());
                     throw e;
                 }

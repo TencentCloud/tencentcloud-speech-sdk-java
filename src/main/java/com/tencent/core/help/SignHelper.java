@@ -4,8 +4,14 @@ import com.tencent.core.utils.SignBuilder;
 
 import java.net.URLEncoder;
 import java.util.Map;
+import java.util.TreeSet;
 
 public class SignHelper {
+    private static TreeSet<String> NO_ENCODE_PARAMS = new TreeSet<>();
+
+    public static void setNoURLEncodeParam(String paramName) {
+        NO_ENCODE_PARAMS.add(paramName);
+    }
 
     public static String createUrl(Map<String, Object> paramMap) {
         StringBuilder sb = new StringBuilder();
@@ -25,18 +31,26 @@ public class SignHelper {
     }
 
 
-    public static String createSign(String signPrefixUrl,String param,String appid,String secretKey){
-        return SignBuilder.base64_hmac_sha1(createRequestUrl(signPrefixUrl,param,appid),secretKey);
+    public static String createSign(String signPrefixUrl, String param, String appid, String secretKey) {
+        return SignBuilder.base64_hmac_sha1(createRequestUrl(signPrefixUrl, param, appid), secretKey);
     }
 
-    public static String createRequestUrl(String prefixUrl,String param,String appid){
+    public static String createRequestUrl(String prefixUrl, String param, String appid) {
         return new StringBuilder().append(prefixUrl).append(appid).append(param).toString();
     }
+
     public static Map<String, Object> encode(Map<String, Object> src) {
         if (src != null) {
             for (String key : src.keySet()) {
-                if(src.get(key) instanceof String){
-                    src.put(key, URLEncoder.encode(String.valueOf(src.get(key))));
+                if (src.get(key) instanceof String) {
+                    if (NO_ENCODE_PARAMS.contains(key)) {
+                        String value = String.valueOf(src.get(key)).
+                                replace("|", "%7C").
+                                replace(",", "%2C");
+                        src.put(key, value);
+                    } else {
+                        src.put(key, URLEncoder.encode(String.valueOf(src.get(key))));
+                    }
                 }
             }
         }
