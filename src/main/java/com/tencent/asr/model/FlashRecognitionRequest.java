@@ -95,6 +95,9 @@ public class FlashRecognitionRequest extends TRequest {
      */
     private String hotwordList;
 
+    /** 替换词id。用于调用对应的替换词表。 */
+    private String replaceTextId;
+
     /**
      * 扩展字段
      */

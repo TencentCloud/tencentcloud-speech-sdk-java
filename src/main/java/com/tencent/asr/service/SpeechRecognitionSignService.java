@@ -153,6 +153,7 @@ class SpeechRecognitionSignService {
         treeMap.put("sentence_max_length", request.getSentenceMaxLength());
         treeMap.put("hotword_list", request.getHotwordList());
         treeMap.put("reinforce_hotword", request.getReinforceHotword());
+        treeMap.put("replace_text_id", request.getReplaceTextId());
         return treeMap;
     }
 }
