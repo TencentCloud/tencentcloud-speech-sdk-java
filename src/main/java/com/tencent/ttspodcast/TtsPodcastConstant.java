@@ -43,6 +43,7 @@ public class TtsPodcastConstant {
 
     private static String FlowingSpeechSynthesizer_ACTION_SYNTHESIS ="ACTION_SYNTHESIS";
     private static String FlowingSpeechSynthesizer_ACTION_COMPLETE ="ACTION_COMPLETE";
+    private static String FlowingSpeechSynthesizer_ACTION_CANCEL ="ACTION_CANCEL";
 
     public static String getFlowingSpeechSynthesizer_ACTION_SYNTHESIS() {
         return FlowingSpeechSynthesizer_ACTION_SYNTHESIS;
@@ -50,5 +51,9 @@ public class TtsPodcastConstant {
 
     public static String getFlowingSpeechSynthesizer_ACTION_COMPLETE() {
         return FlowingSpeechSynthesizer_ACTION_COMPLETE;
+    }
+
+    public static String getFlowingSpeechSynthesizer_ACTION_CANCEL() {
+        return FlowingSpeechSynthesizer_ACTION_CANCEL;
     }
 }

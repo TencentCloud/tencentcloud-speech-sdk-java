@@ -278,6 +278,45 @@ public class TtsPodcastSynthesizer extends StateMachine {
     }
 
     /**
+     * 取消合成：发送取消通知，主动终止当前合成任务
+     */
+    public void cancel() {
+        cancel(TtsPodcastConstant.DEFAULT_FLOWING_STOP_TIMEOUT_MILLISECONDS);
+    }
+
+    /**
+     * 取消合成：发送取消通知，主动终止当前合成任务
+     *
+     * @param milliSeconds 等待服务端确认的超时时间，0表示无限等待
+     */
+    public void cancel(long milliSeconds) {
+        try {
+            if (state == STATE_COMPLETE) {
+                logger.info("state is {} cancel message is discarded", STATE_COMPLETE);
+                return;
+            }
+            if (conn != null) {
+                String cancelMsg = newWsRequestMessage("", TtsPodcastConstant.getFlowingSpeechSynthesizer_ACTION_CANCEL());
+                logger.info("cancel sessionId:{}", request.getSessionId());
+                conn.sendText(cancelMsg);
+                if (milliSeconds > 0) {
+                    boolean result = stopLatch.await(milliSeconds, TimeUnit.MILLISECONDS);
+                    if (!result) {
+                        logger.warn("timeout after {} ms waiting for cancel confirmation.sessionId:{},state:{}",
+                                milliSeconds, request.getSessionId(), state);
+                    }
+                } else {
+                    stopLatch.await();
+                }
+            }
+        } catch (Exception e) {
+            logger.error("cancel failed, sessionId:{}", request.getSessionId(), e);
+        } finally {
+            close("cancel");
+        }
+    }
+
+    /**
      * 关闭连接
      */
     public void close(String reason) {

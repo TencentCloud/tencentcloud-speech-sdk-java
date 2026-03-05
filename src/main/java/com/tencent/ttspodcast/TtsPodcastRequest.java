@@ -69,7 +69,7 @@ public class TtsPodcastRequest extends CommonRequest {
      * 2：双人播客，参数 Speaker1Voice 和 Speaker2Voice 指定音色
      */
     @SerializedName("SpeakerNumber")
-    private String speakerNumber;
+    private Integer speakerNumber;
 
     /**
      * 否
@@ -84,6 +84,20 @@ public class TtsPodcastRequest extends CommonRequest {
      */
     @SerializedName("Speaker2Voice")
     private String speaker2Voice;
+
+    /**
+     * 否
+     * String：交互请求上下文 ID，随上一个请求的 Result 信息返回，默认为空
+     */
+    @SerializedName("ContextId")
+    private String contextId;
+
+    /**
+     * 否
+     * Boolean：是否开启 Web 搜索，默认不开启
+     */
+    @SerializedName("EnableWebSearch")
+    private Boolean enableWebSearch;
 
     public String getSecretid() {
         return secretid;
@@ -133,11 +147,11 @@ public class TtsPodcastRequest extends CommonRequest {
         this.codec = codec;
     }
 
-    public String getSpeakerNumber() {
+    public Integer getSpeakerNumber() {
         return speakerNumber;
     }
 
-    public void setSpeakerNumber(String speakerNumber) {
+    public void setSpeakerNumber(Integer speakerNumber) {
         this.speakerNumber = speakerNumber;
     }
 
@@ -171,6 +185,22 @@ public class TtsPodcastRequest extends CommonRequest {
 
     public void setAppId(Integer appId) {
         this.appId = appId;
+    }
+
+    public String getContextId() {
+        return contextId;
+    }
+
+    public void setContextId(String contextId) {
+        this.contextId = contextId;
+    }
+
+    public Boolean getEnableWebSearch() {
+        return enableWebSearch;
+    }
+
+    public void setEnableWebSearch(Boolean enableWebSearch) {
+        this.enableWebSearch = enableWebSearch;
     }
 
     public Map<String, Object> toTreeMap() {

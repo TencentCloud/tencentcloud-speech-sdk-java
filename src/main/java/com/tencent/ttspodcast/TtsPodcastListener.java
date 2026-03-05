@@ -6,7 +6,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.ByteBuffer;
-import java.util.Objects;
 
 /**
  * TextToStreamAudioWSV2回调
@@ -59,11 +58,7 @@ public abstract class TtsPodcastListener implements ConnectionListener {
             onSynthesisStart(response);
             synthesizer.markReady();
         } else if (isResultMsg(response)) {
-            // 仅当收到有效的 scripts 才回调 onTextResult
-            TtsPodcastScripts[] scripts = response.getResult().getScripts();
-            if (scripts != null && scripts.length > 0) {
-                onTextResult(response);
-            }
+            onTextResult(response);
         } else if (isCompleteMsg(response)) {
             // 收到 final 主动关闭连接，防止留下半连接
             synthesizer.close("final msg received");
