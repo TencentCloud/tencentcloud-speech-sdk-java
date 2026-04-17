@@ -194,6 +194,18 @@ public class SpeechRecognizerRequest extends CommonRequest {
     private Integer speakerDiarization;
 
     /**
+     * 结果返回模式。0：传统模式（默认），返回 result 字段；1：句子模式，返回 sentences 字段，按标点切分为结构化句子列表。
+     */
+    @SerializedName("result_mod")
+    private Integer resultMod;
+
+    /**
+     * 句子模式下的分句策略（仅 result_mod=1 时生效）。0：单句模式（默认），有一句完整句子即返回；1：段落模式，累积多句后返回。
+     */
+    @SerializedName("sentence_strategy")
+    private Integer sentenceStrategy;
+
+    /**
      * 增值付费功能情绪识别能力（目前仅支持 16k_zh,8k_zh）
      * 0：不开启。
      * 1：开启情绪识别，但不在文本展示情绪标签。
@@ -417,6 +429,22 @@ public class SpeechRecognizerRequest extends CommonRequest {
 
     public void setSpeakerDiarization(Integer speakerDiarization) {
         this.speakerDiarization = speakerDiarization;
+    }
+
+    public Integer getResultMod() {
+        return resultMod;
+    }
+
+    public void setResultMod(Integer resultMod) {
+        this.resultMod = resultMod;
+    }
+
+    public Integer getSentenceStrategy() {
+        return sentenceStrategy;
+    }
+
+    public void setSentenceStrategy(Integer sentenceStrategy) {
+        this.sentenceStrategy = sentenceStrategy;
     }
 
     public static SpeechRecognizerRequest init() {

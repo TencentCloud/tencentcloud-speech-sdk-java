@@ -37,6 +37,12 @@ public class SpeechRecognizerResponse {
     @SerializedName(value = "result")
     private SpeechRecognizerResult result;
 
+    /**
+     * 句子模式返回结果（result_mod=1 时返回此字段，result 为 null）
+     */
+    @SerializedName(value = "sentences")
+    private SentenceResult sentences;
+
     @SerializedName(value = "message_id")
     private String messageId;
 
@@ -87,5 +93,13 @@ public class SpeechRecognizerResponse {
 
     public void setResult(SpeechRecognizerResult result) {
         this.result = result;
+    }
+
+    public SentenceResult getSentences() {
+        return sentences;
+    }
+
+    public void setSentences(SentenceResult sentences) {
+        this.sentences = sentences;
     }
 }
