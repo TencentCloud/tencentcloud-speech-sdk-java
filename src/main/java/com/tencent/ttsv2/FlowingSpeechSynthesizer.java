@@ -15,18 +15,18 @@ import java.util.concurrent.TimeUnit;
 import static com.tencent.core.ws.StateMachine.State.STATE_COMPLETE;
 
 /**
- * 本接口服务采用 websocket 协议，将请求文本合成为音频，同步返回合成音频数据及相关文本信息，达到“边合成边播放”的效果。
+ * This service uses the WebSocket protocol to synthesize the requested text into audio, synchronously returning the synthesized audio data along with related text information, achieving a "synthesize while playing" effect.
  */
 public class FlowingSpeechSynthesizer extends StateMachine {
     static Logger logger = LoggerFactory.getLogger(FlowingSpeechSynthesizer.class);
 
     /**
-     * 上下文信息
+     * Context information.
      */
     private final Map<String, Object> ctx = new HashMap<>();
 
     /**
-     * 请求标识 当request中voice_id为空时，rec_uuid为voice_id
+     * Request identifier. When voice_id in the request is empty, rec_uuid is used as the voice_id.
      */
     private final String sessionId = UUID.randomUUID().toString();
 
@@ -95,7 +95,7 @@ public class FlowingSpeechSynthesizer extends StateMachine {
     }
 
     /**
-     * 请求服务端，超时则抛出异常
+     * Send the request to the server. Throws an exception on timeout.
      *
      * @throws Exception
      */
@@ -104,7 +104,7 @@ public class FlowingSpeechSynthesizer extends StateMachine {
     }
 
     /**
-     * 请求服务端，超时则抛出异常
+     * Send the request to the server. Throws an exception on timeout.
      *
      * @param milliSeconds
      * @throws Exception
@@ -116,15 +116,18 @@ public class FlowingSpeechSynthesizer extends StateMachine {
         logger.debug("sessionId:{},start change state to {} ", sessionId, state);
         request.setSecretid(credential.getSecretId());
         request.setTimestamp(System.currentTimeMillis() / 1000);
-        request.setExpired(System.currentTimeMillis() / 1000 + 86400); // 1天后过期
+        request.setExpired(System.currentTimeMillis() / 1000 + 86400); // Expires after 1 day.
         Map<String, Object> sortParamMap = request.toTreeMap();
         String signUrl = new StringBuilder().append(TtsConstant.DEFAULT_TTS_V2_SIGN_PREFIX).append(SignHelper.createUrl(sortParamMap)).toString();
         logger.debug(signUrl);
         String sign = SignBuilder.base64_hmac_sha1(signUrl, credential.getSecretKey());
         String serverUrl = SignHelper.createUrl(SignHelper.encode(sortParamMap));
-        String url = new StringBuilder().append(TtsConstant.DEFAULT_TTS_V2_REQ_URL).append(serverUrl).append("&Signature=").append(URLEncoder.encode(sign, "UTF-8")).toString();
+        boolean isInternational = TtsConstant.ACCOUNT_AREA_INTERNATIONAL.equals(request.getAccountArea());
+        String reqUrlPrefix = isInternational ? TtsConstant.DEFAULT_TTS_V2_INTL_REQ_URL : TtsConstant.DEFAULT_TTS_V2_REQ_URL;
+        String host = isInternational ? TtsConstant.DEFAULT_INTL_HOST : TtsConstant.DEFAULT_HOST;
+        String url = new StringBuilder().append(reqUrlPrefix).append(serverUrl).append("&Signature=").append(URLEncoder.encode(sign, "UTF-8")).toString();
         logger.debug(url);
-        ConnectionProfile connectionProfile = new ConnectionProfile(sign, url, TtsConstant.DEFAULT_HOST, this.credential.getToken());
+        ConnectionProfile connectionProfile = new ConnectionProfile(sign, url, host, this.credential.getToken());
         this.conn = client.connect(connectionProfile, this.listener);
         Map<String, Long> network = new HashMap<>();
         network.put(Constant.CONNECTING_LATENCY_KEY, conn.getConnectingLatency());
@@ -139,7 +142,7 @@ public class FlowingSpeechSynthesizer extends StateMachine {
     }
 
     /**
-     * 发送数据
+     * Send data.
      *
      * @param text
      */
@@ -180,10 +183,10 @@ public class FlowingSpeechSynthesizer extends StateMachine {
     }
 
     /**
-     * 合成文本message
+     * Build the synthesis text message.
      *
-     * @param text   文本
-     * @param action 事件
+     * @param text   text
+     * @param action event
      * @return
      */
     private String newWsRequestMessage(String text, String action) {
@@ -197,7 +200,7 @@ public class FlowingSpeechSynthesizer extends StateMachine {
 
 
     /**
-     * 结束语音识别:发送结束识别通知,接收服务端确认
+     * Finish speech recognition: send the end-of-recognition notification and wait for the server's acknowledgment.
      *
      * @throws Exception
      */
@@ -206,7 +209,7 @@ public class FlowingSpeechSynthesizer extends StateMachine {
     }
 
     /**
-     * 结束语音识别:发送结束识别通知,接收服务端确认, 超时未返回则抛出异常
+     * Finish speech recognition: send the end-of-recognition notification and wait for the server's acknowledgment. Throws an exception if no response is returned within the timeout.
      *
      * @throws Exception
      */
@@ -239,7 +242,7 @@ public class FlowingSpeechSynthesizer extends StateMachine {
     /**
      * wait for processing complete
      *
-     * @param interval 等待间隔
+     * @param interval wait interval
      */
     private void waitComplete(int interval) {
         while (conn.isActive()) {
@@ -252,7 +255,7 @@ public class FlowingSpeechSynthesizer extends StateMachine {
     }
 
     /**
-     * 关闭连接
+     * Close the connection.
      */
     public void close() {
         try {
@@ -260,7 +263,7 @@ public class FlowingSpeechSynthesizer extends StateMachine {
                 conn.close();
             }
             if (TtsConstant.DEFAULT_TTS_FLOWING_CLOSE_SLEEP_MILLISECONDS > 0) {
-                Thread.sleep(TtsConstant.DEFAULT_TTS_FLOWING_CLOSE_SLEEP_MILLISECONDS); //休眠500ms 避免服务端连接未及时关闭
+                Thread.sleep(TtsConstant.DEFAULT_TTS_FLOWING_CLOSE_SLEEP_MILLISECONDS); // Sleep 500ms to avoid the server-side connection not being closed in time.
             }
         } catch (Exception e) {
 
@@ -278,7 +281,7 @@ public class FlowingSpeechSynthesizer extends StateMachine {
     }
 
     /**
-     * 内部调用方法
+     * Internal callback method.
      */
     void markComplete() {
         logger.debug("sessionId:{},markComplete change state from {} ", sessionId, state);

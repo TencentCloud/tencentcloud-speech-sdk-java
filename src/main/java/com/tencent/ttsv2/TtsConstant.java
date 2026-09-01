@@ -1,18 +1,30 @@
 package com.tencent.ttsv2;
 
 public class TtsConstant {
-    //实时识别请求地址
+    // Real-time recognition request URL.
     public static String DEFAULT_TTS_REQ_URL = "wss://tts.cloud.tencent.com/stream_ws";
-    //实时识别签名字符串前缀
+    // International account real-time recognition request URL.
+    public static String DEFAULT_TTS_INTL_REQ_URL = "wss://tts-international.tencentcloud.com/stream_ws";
+    // Prefix of the signature string for real-time recognition.
     public static String DEFAULT_TTS_SIGN_PREFIX = "GETtts.cloud.tencent.com/stream_ws";
 
-    //实时识别请求地址
+    // Real-time recognition request URL.
     public static String DEFAULT_TTS_V2_REQ_URL = "wss://tts.cloud.tencent.com/stream_wsv2";
-    //实时识别签名字符串前缀
+    // International account real-time recognition request URL.
+    public static String DEFAULT_TTS_V2_INTL_REQ_URL = "wss://tts-international.tencentcloud.com/stream_wsv2";
+    // Prefix of the signature string for real-time recognition.
     public static String DEFAULT_TTS_V2_SIGN_PREFIX = "GETtts.cloud.tencent.com/stream_wsv2";
-    //请求Host
+
+    // Account area value indicating a china account (default).
+    public static String ACCOUNT_AREA_CHINA = "0";
+    // Account area value indicating an international-station account.
+    public static String ACCOUNT_AREA_INTERNATIONAL = "1";
+
+    // Request Host.
     public static String DEFAULT_HOST = "tts.cloud.tencent.com";
-    // start、stop方法countdown超时时间 单位ms
+    // International account request Host.
+    public static String DEFAULT_INTL_HOST = "tts-international.tencentcloud.com";
+    // Countdown timeout for the start and stop methods, in milliseconds.
     public static int DEFAULT_START_TIMEOUT_MILLISECONDS = 60000;
 
     public static int DEFAULT_TTS_FLOWING_STOP_TIMEOUT_MILLISECONDS = 0;

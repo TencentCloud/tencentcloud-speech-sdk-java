@@ -9,7 +9,7 @@ import java.nio.ByteBuffer;
 import java.util.Objects;
 
 /**
- * TextToStreamAudioWSV2回调
+ * TextToStreamAudioWSV2 callback.
  */
 public abstract class FlowingSpeechSynthesizerListener implements ConnectionListener {
     Logger logger = LoggerFactory.getLogger(FlowingSpeechSynthesizerListener.class);
@@ -30,7 +30,7 @@ public abstract class FlowingSpeechSynthesizerListener implements ConnectionList
     public abstract void onTextResult(SpeechSynthesizerResponse response);
 
     /**
-     * 请求失败
+     * Called when the request fails.
      *
      * @param response
      */

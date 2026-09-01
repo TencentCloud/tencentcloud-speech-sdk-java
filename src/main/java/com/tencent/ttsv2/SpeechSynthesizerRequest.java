@@ -9,11 +9,11 @@ import java.util.Map;
 import java.util.TreeMap;
 
 /**
- * 实时语音合成参数
+ * Real-time speech synthesis request parameters.
  */
 public class SpeechSynthesizerRequest extends CommonRequest {
     /**
-     * 调用接口名，取值为：TextToStreamAudioWS
+     * API action name. The value is: TextToStreamAudioWS.
      */
     @SerializedName("Action")
     private String action;
@@ -22,106 +22,114 @@ public class SpeechSynthesizerRequest extends CommonRequest {
     private Integer appId;
 
     /**
-     * 腾讯云注册账号的密钥 SecretId，可通过 API 密钥管理页面 获取
+     * SecretId of the Tencent Cloud registered account, which can be obtained from the API key management page.
      */
     @SerializedName("SecretId")
     private String secretid;
 
     /**
-     * 当前 UNIX 时间戳，可记录发起 API 请求的时间。如果与当前时间相差过大，会引起签名过期错误。可以取值为当前请求的系统时间戳即可。
+     * The current UNIX timestamp, which records the time the API request is initiated. If it differs too much from the current time, a signature-expired error will occur. Simply use the system timestamp of the current request.
      */
     @SerializedName("Timestamp")
     protected Long timestamp;
 
     /**
-     * 签名的有效期，是一个符合 UNIX Epoch 时间戳规范的数值，单位为秒；Expired 必须大于 Timestamp 且 Expired - Timestamp 小于90天。
+     * The signature validity period, a value conforming to the UNIX Epoch timestamp specification, in seconds. Expired must be greater than Timestamp, and (Expired - Timestamp) must be less than 90 days.
      */
     @SerializedName("Expired")
     protected Long expired;
 
 
     /**
-     * 是
-     * String一次请求对应一个 SessionId，会原样返回，建议传入类似于 uuid 的字符串防止重复。
+     * Required.
+     * String: each request corresponds to one SessionId and it will be returned as-is. A UUID-like string is recommended to prevent duplication.
      */
     @SerializedName("SessionId")
     private String sessionId;
 
     /**
-     * 合成语音的源文本，按UTF-8编码统一计算。中文最大支持 600 个汉字（全角标点符号算一个汉字）；英文最大支持 1800 个字母（半角标点符号算一个字母）。
+     * The source text of the synthesized speech, calculated uniformly in UTF-8 encoding. Chinese supports up to 600 Chinese characters (a full-width punctuation mark counts as one Chinese character). English supports up to 1800 letters (a half-width punctuation mark counts as one letter).
      */
     @SerializedName("Text")
     private String text;
 
 
     /**
-     * 否
-     * Int详见：语音合成 API 文档中的 VoiceType 参数。
+     * Optional.
+     * Int: see the VoiceType parameter in the Speech Synthesis API documentation for details.
      */
     @SerializedName("VoiceType")
     private Integer voiceType;
 
     /**
-     * 否
-     * Float音量大小，范围：[0，10]，分别对应11个等级的音量，默认值为0，代表正常音量。没有静音选项。
+     * Optional.
+     * Float: volume level, range [0, 10], corresponding to 11 volume levels. The default value is 0, representing normal volume. There is no mute option.
      */
     @SerializedName("Volume")
     private Float volume;
 
 
     /**
-     * 否
-     * Int语速，范围：[-2，2]分别对应不同语速：
-     * -2代表0.6倍
-     * -1代表0.8倍
-     * 0代表1.0倍（默认）
-     * 1代表1.2倍
-     * 2代表1.5倍
-     * 输入除以上整数之外的其他参数不生效，按默认值处理。
-     * 若需要更细化的语速档次，可以保留小数点一位，如-1.1 0.5 1.7等
+     * Optional.
+     * Int: speech rate, range [-2, 2], corresponding to different rates:
+     * -2 stands for 0.6x
+     * -1 stands for 0.8x
+     * 0 stands for 1.0x (default)
+     * 1 stands for 1.2x
+     * 2 stands for 1.5x
+     * Any integer other than the ones above is ignored and treated as default.
+     * If a finer speech-rate step is needed, one decimal digit is supported, e.g. -1.1, 0.5, 1.7, etc.
      */
     @SerializedName("Speed")
     private Float speed;
     /**
-     * 否
-     * Int 音频采样率：
-     * 16000:16k（默认）
-     * 8000:8k
+     * Optional.
+     * Int: audio sample rate:
+     * 16000: 16k (default)
+     * 8000: 8k
      */
     @SerializedName("SampleRate")
     private Integer sampleRate;
 
 
     /**
-     * 否
-     * String 返回音频格式：
-     * opus：
-     * 返回多段含 opus
-     * 压缩分片音频，数据量小，建议使用（默认）。
-     * pcm：
-     * 返回二进制 pcm
-     * 音频，使用简单，但数据量大。
+     * Optional.
+     * String: returned audio format:
+     * opus:
+     * returns multiple segments of opus-compressed sharded audio;
+     * the data size is small, recommended (default).
+     * pcm:
+     * returns binary pcm audio;
+     * easy to use, but the data size is large.
      */
     @SerializedName("Codec")
     private String codec;
 
     /**
-     * 是否开启时间戳功能，默认为false。
+     * Whether to enable timestamps. Default is false.
      */
     @SerializedName("EnableSubtitle")
     private Boolean enableSubtitle;
 
     /**
-     * 控制合成音频的情感，仅支持多情感音色使用。
-     * neutral(中性)、sad(悲伤)、happy(高兴)、angry(生气)、fear(恐惧)、news(新闻)、story(故事)、radio(广播)、poetry(诗歌)、call(客服)
+     * Controls the emotion of the synthesized audio. Only supported by multi-emotion voice types.
+     * neutral (neutral), sad (sad), happy (happy), angry (angry), fear (fear), news (news), story (story), radio (radio), poetry (poetry), call (customer service).
      */
     @SerializedName("EmotionCategory")
     private String emotionCategory;
     /**
-     * 控制合成音频情感程度，取值范围为[50,200],默认为100；只有 EmotionCategory 不为空时生效；
+     * Controls the emotion intensity of the synthesized audio. Range: [50, 200], default 100. Only takes effect when EmotionCategory is not empty.
      */
     @SerializedName("EmotionIntensity")
     private Integer emotionIntensity;
+
+    /**
+     * Account area.
+     * 0: China account (default)
+     * 1: International account
+     */
+    @SerializedName("AccountArea")
+    private String accountArea;
 
     public String getSecretid() {
         return secretid;
@@ -241,6 +249,14 @@ public class SpeechSynthesizerRequest extends CommonRequest {
 
     public void setAppId(Integer appId) {
         this.appId = appId;
+    }
+
+    public String getAccountArea() {
+        return accountArea;
+    }
+
+    public void setAccountArea(String accountArea) {
+        this.accountArea = accountArea;
     }
 
     public Map<String, Object> toTreeMap() {

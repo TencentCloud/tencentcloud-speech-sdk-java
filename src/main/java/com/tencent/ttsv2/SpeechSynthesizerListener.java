@@ -10,7 +10,7 @@ import java.nio.ByteBuffer;
 import java.util.Objects;
 
 /**
- * 语音合成回调
+ * Speech synthesis callback.
  */
 public abstract class SpeechSynthesizerListener implements ConnectionListener {
 
@@ -32,7 +32,7 @@ public abstract class SpeechSynthesizerListener implements ConnectionListener {
     public abstract void onTextResult(SpeechSynthesizerResponse response);
 
     /**
-     * 请求失败
+     * Called when the request fails.
      *
      * @param response
      */

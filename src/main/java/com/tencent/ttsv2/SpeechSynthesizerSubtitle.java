@@ -5,35 +5,35 @@ import com.google.gson.annotations.SerializedName;
 public class SpeechSynthesizerSubtitle {
 
     /**
-     * ⽂本信息
+     * Text information.
      */
     @SerializedName("Text")
     private String text;
     /**
-     * ⽂本对应tts语⾳开始时间戳
+     * Start timestamp of the TTS audio corresponding to the text.
      */
     @SerializedName("BeginTime")
     private Integer beginTime;
 
     /**
-     * ⽂本对应tts语⾳结束时间戳
+     * End timestamp of the TTS audio corresponding to the text.
      */
     @SerializedName("EndTime")
     private Integer endTime;
     /**
-     * 该字在整句中的开始位置
+     * Start position of this character within the whole sentence.
      */
     @SerializedName("BeginIndex")
     private Integer beginIndex;
 
     /**
-     * 该字在整句中的结束位置
+     * End position of this character within the whole sentence.
      */
     @SerializedName("EndIndex")
     private Integer endIndex;
 
     /**
-     * 该字的音素
+     * Phoneme of this character.
      */
     @SerializedName("Phoneme")
     private String phoneme;

@@ -15,19 +15,19 @@ import java.util.concurrent.TimeUnit;
 import static com.tencent.core.ws.StateMachine.State.STATE_COMPLETE;
 
 /**
- * 实时语音合成
+ * Real-time speech synthesis.
  */
 public class SpeechSynthesizer extends StateMachine {
 
     static Logger logger = LoggerFactory.getLogger(SpeechSynthesizer.class);
 
     /**
-     * 上下文信息
+     * Context information.
      */
     private final Map<String, Object> ctx = new HashMap<>();
 
     /**
-     * 请求标识 当request中voice_id为空时，rec_uuid为voice_id
+     * Request identifier. When voice_id in the request is empty, rec_uuid is used as the voice_id.
      */
     private final String recUuid = UUID.randomUUID().toString();
 
@@ -96,7 +96,7 @@ public class SpeechSynthesizer extends StateMachine {
     }
 
     /**
-     * 请求服务端，超时则抛出异常
+     * Send the request to the server. Throws an exception on timeout.
      *
      * @throws Exception
      */
@@ -105,7 +105,7 @@ public class SpeechSynthesizer extends StateMachine {
     }
 
     /**
-     * 请求服务端，超时则抛出异常
+     * Send the request to the server. Throws an exception on timeout.
      *
      * @param milliSeconds
      * @throws Exception
@@ -117,15 +117,18 @@ public class SpeechSynthesizer extends StateMachine {
         logger.debug("recUuid:{},start change state to {} ", recUuid, state);
         request.setSecretid(credential.getSecretId());
         request.setTimestamp(System.currentTimeMillis() / 1000);
-        request.setExpired(System.currentTimeMillis() / 1000 + 86400); // 1天后过期
+        request.setExpired(System.currentTimeMillis() / 1000 + 86400); // Expires after 1 day.
         Map<String, Object> sortParamMap = request.toTreeMap();
+        boolean isInternational = TtsConstant.ACCOUNT_AREA_INTERNATIONAL.equals(request.getAccountArea());
         String signUrl = new StringBuilder().append(TtsConstant.DEFAULT_TTS_SIGN_PREFIX).append(SignHelper.createUrl(sortParamMap)).toString();
         logger.debug(signUrl);
         String sign = SignBuilder.base64_hmac_sha1(signUrl, credential.getSecretKey());
         String serverUrl = SignHelper.createUrl(SignHelper.encode(sortParamMap));
-        String url = new StringBuilder().append(TtsConstant.DEFAULT_TTS_REQ_URL).append(serverUrl).append("&Signature=").append(URLEncoder.encode(sign, "UTF-8")).toString();
+        String reqUrlPrefix = isInternational ? TtsConstant.DEFAULT_TTS_INTL_REQ_URL : TtsConstant.DEFAULT_TTS_REQ_URL;
+        String host = isInternational ? TtsConstant.DEFAULT_INTL_HOST : TtsConstant.DEFAULT_HOST;
+        String url = new StringBuilder().append(reqUrlPrefix).append(serverUrl).append("&Signature=").append(URLEncoder.encode(sign, "UTF-8")).toString();
         logger.debug(url);
-        ConnectionProfile connectionProfile = new ConnectionProfile(sign, url, TtsConstant.DEFAULT_HOST, this.credential.getToken());
+        ConnectionProfile connectionProfile = new ConnectionProfile(sign, url, host, this.credential.getToken());
         this.conn = client.connect(connectionProfile, this.listener);
         Map<String, Long> network = new HashMap<>();
         network.put(Constant.CONNECTING_LATENCY_KEY, conn.getConnectingLatency());
@@ -140,7 +143,7 @@ public class SpeechSynthesizer extends StateMachine {
     }
 
     /**
-     * 发送数据
+     * Send data.
      *
      * @param data
      */
@@ -149,7 +152,7 @@ public class SpeechSynthesizer extends StateMachine {
     }*/
 
     /**
-     * 发送数据
+     * Send data.
      *
      * @param data
      * @param length
@@ -175,7 +178,7 @@ public class SpeechSynthesizer extends StateMachine {
 
 
     /**
-     * 结束语音识别:发送结束识别通知,接收服务端确认
+     * Finish speech recognition: send the end-of-recognition notification and wait for the server's acknowledgment.
      *
      * @throws Exception
      */
@@ -184,7 +187,7 @@ public class SpeechSynthesizer extends StateMachine {
     }
 
     /**
-     * 结束语音识别:发送结束识别通知,接收服务端确认, 超时未返回则抛出异常
+     * Finish speech recognition: send the end-of-recognition notification and wait for the server's acknowledgment. Throws an exception if no response is returned within the timeout.
      *
      * @throws Exception
      */
@@ -210,7 +213,7 @@ public class SpeechSynthesizer extends StateMachine {
     }
 
     /**
-     * 关闭连接
+     * Close the connection.
      */
     public void close() {
         if (conn != null) {
@@ -229,7 +232,7 @@ public class SpeechSynthesizer extends StateMachine {
     }
 
     /**
-     * 内部调用方法
+     * Internal callback method.
      */
     void markComplete() {
         logger.debug("recUuid:{},markComplete change state from {} ", recUuid, state);
